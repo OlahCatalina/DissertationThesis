@@ -47,6 +47,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             if (canEdit)
             {
                 listOfSites.Add(site);
+                listOfSites = listOfSites.OrderBy(s => s.Index).ToList();
                 var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
                                  FileHelper.PATH_TO_FILES +
                                  FileHelper.SITES_FILE_NAME;
@@ -66,6 +67,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             while (arrayWithIndexes.Contains(i)) i++;
             site.Index = i;
             listOfSites.Add(site);
+            listOfSites = listOfSites.OrderBy(s => s.Index).ToList();
             var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
                              FileHelper.PATH_TO_FILES +
                              FileHelper.SITES_FILE_NAME;
@@ -85,7 +87,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 
             await FeedClassifierCorpusWithSitesTextAndCategory(listOfSites, pathToFile);
 
-            return Json(new { });
+            return Json(new { data = listOfSites });
         }
 
         [HttpPost]
@@ -142,7 +144,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         {
             // Save into text file
             var listOfDocuments = new List<Document>();
-
+   
             foreach (var site in sites)
             {
                 var url = site.Url;

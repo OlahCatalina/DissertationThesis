@@ -166,7 +166,7 @@
                 {
                     "data": 'Url',
                     "render": function (data, type, row) {
-                        return `<a class="fst-italic" href="${data}">${data}</a>`;
+                        return `<a class="fst-italic" target="_blank" href="${data}">${data}</a>`;
                     }
                 },
                 {
@@ -412,7 +412,16 @@
                 method: 'POST',
                 cache: false
             })
-            .done(function() {
+            .done(function(data) {
+                $(triggerButton).prop("disabled", false);
+                $.alert("Finished training of classifier.");
+            })
+            .fail(function (jqXhr, textStatus, errorThrown) {
+                var errMsg = `Error ${jqXhr.status}`;
+                if (errorThrown !== "" && errorThrown != null) {
+                    errMsg += `: ${errorThrown}.`;
+                }
+                $.alert(errMsg);
                 $(triggerButton).prop("disabled", false);
             });
     }

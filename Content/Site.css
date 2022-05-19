@@ -13,3 +13,6 @@
 .jconfirm .jconfirm-box div.jconfirm-content-pane .jconfirm-content {
     overflow: unset;
 }
+table.dataTable {
+    width: 100% !important;
+}
