@@ -1,0 +1,438 @@
+﻿@{
+    ViewBag.Title = "Data Generator";
+}
+
+<!-- Title -->
+<div class="row pt-3">
+    <div class="col text-center">
+        <h1 class="text-primary">Data generator</h1>
+        <p class="text-secondary small">Here we can manage the data that goes into the Bayes classifier.</p>
+        <hr /><br />
+    </div>
+</div>
+<!-- List of sites -->
+<div class="row">
+
+    <div class="col-12">
+        <!-- Info text -->
+        <div class="row">
+            <div class="col-12">
+                <p class="text-secondary mb-0">List of sites:</p>
+            </div>
+        </div>
+          <!-- Buttons -->
+        <div class="row">
+            <div class="col-12">
+
+                <!-- Remove button -->
+                <button id="removeSiteButton" onclick="removeSite(this)" class="btn btn-primary" disabled>
+                    Remove
+                    <!-- Icon for minus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                    </svg>
+                </button>
+
+                <!-- Edit button -->
+                <button id="editSiteButton" onclick="editSite(this)" class="btn btn-primary" disabled>
+                    Edit
+                    <!-- Icon for edit -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                    </svg>
+                </button>
+
+                <!-- Add button -->
+                <button id="addSiteButton" onclick="addSite(this)" class="btn btn-primary">
+                    Add
+                    <!-- Icon for plus-->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                    </svg>
+                </button>
+
+              
+                <!-- Guess category button -->
+                <button id="guessCategoryButton" onclick="guessCategory(this)" class="btn btn-success float-end mx-1">
+                    Predict
+                    <!-- Icon for question mark -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                    </svg>
+                </button>
+                <!-- Input for a link -->
+                <input type="text" style="width: 50%; max-width: 300px;" class="form-control float-end" id="guessSiteInput" placeholder="eg. http://site.com">
+            
+                <!-- Train button -->
+                <button id="trainButton" onclick="trainClassifier(this)" class="btn btn-secondary float-end mx-1">
+                    Train
+                    <!-- Icon for right arrow -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                        <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                    </svg>
+                </button>
+                </div>
+        </div>
+        <!-- Table -->
+        <div class="row">
+            <div class="col-12 py-3">
+                <table id="sitesTable" class="table">
+                    <thead class="bg-dark text-light">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Site</th>
+                        <th scope="col">URL</th>
+                        <th scope="col">Categories</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Templates -->
+<template id="addOrEditSite">
+    <div class="row">
+        <div class="col-12">
+            <label for="siteNameInput" class="form-label">Site name</label><br />
+            <input type="text" class="form-control" id="siteNameInput" placeholder="eg. Wikipedia"><br />
+            <label for="siteUrlInput" class="form-label">URL</label><br />
+            <input type="url" class="form-control" id="siteUrlInput" placeholder="eg. https://en.wikipedia.org/wiki/Main_Page"><br />
+            <label for="categorySelect" class="form-label">Categories</label><br />
+            <select id="categorySelect" class="form-select">
+                <option value="Accommodation industry (hotels, resorts)">Accommodation industry (hotels, resorts)</option>
+                <option value="Blog">Blog</option>
+                <option value="Beauty industry">Beauty industry</option>
+                <option value="Community forum">Community forum</option>
+                <option value="Education">Education</option>
+                <option value="E-commerce">E-commerce</option>
+                <option value="Food and beverages industry">Food and beverages industry</option>
+                <option value="Government, official sites">Government, official site</option>
+                <option value="Health care and services">Health care and services</option>
+                <option value="News/media">News/media</option>
+                <option value="Personal branding/biography">Personal branding/biography</option>
+                <option value="Real estate, rental, leasing">Real estate, rental, leasing</option>
+                <option value="Search engine">Search engine</option>
+                <option value="Social media network">Social media network</option>
+                <option value="Video streaming">Video streaming</option>
+            </select>
+        </div>
+    </div>
+</template>
+
+@Scripts.Render("~/Scripts/jquery/jquery.min.js")
+@Scripts.Render("~/Scripts/bootstrap/bootstrap.min.js")
+@Scripts.Render("~/Scripts/dataTables/dataTables.min.js")
+@Scripts.Render("~/Scripts/jqueryConfirm/jquery-confirm.min.js")
+@Scripts.Render("~/Scripts/select2/select2.min.js")
+@Scripts.Render("~/Scripts/dataMining/Classifier.js")
+@Scripts.Render("~/Scripts/dataMining/DataGenerator.js")
+@Scripts.Render("~/Scripts/dataMining/SiteModel.js")
+@Scripts.Render("~/Scripts/dataMining/SiteTextCategory.js")
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        initializeSitesTable();
+    });
+
+    function initializeSitesTable() {
+        // 1. Get data from file -> call to server -> retrieve from file
+
+        const sitesTable = $('#sitesTable').DataTable({
+            "order": [[0, "asc"]],
+            "ajax": {
+                url: '@Url.Action("GetSites","Home")',
+                method: 'POST',
+                cache: false
+            },
+            "columns": [
+                {
+                    "data": 'Index'
+                },
+                {
+                    "data": 'Name',
+                    "render": function (data, type, row) {
+                        return `<span style="font-weight: 600;">${data}</span>`;
+                    }
+                },
+                {
+                    "data": 'Url',
+                    "render": function (data, type, row) {
+                        return `<a class="fst-italic" href="${data}">${data}</a>`;
+                    }
+                },
+                {
+                    "data": 'Categories',
+                    "render": function (data, type, row) {
+                        return data.join(",");
+                    }
+                }
+            ],
+            select: {
+                style: 'single'
+            }
+        });
+
+        // Handle select/deselect
+        sitesTable
+            .on('select', function (e, dt, type, indexes) {
+                if (type === 'row') {
+                    $("#editSiteButton").prop("disabled", false);
+                    $("#removeSiteButton").prop("disabled", false);
+                }
+            })
+            .on('deselect', function (e, dt, type, indexes) {
+                if (type === 'row') {
+                    $("#editSiteButton").prop("disabled", true);
+                    $("#removeSiteButton").prop("disabled", true);
+                }
+            });
+    }
+
+    function removeSite(triggerButton) {
+
+        // 1. Disable button
+        $(triggerButton).prop("disabled", true);
+
+        // 2. Get selection
+        const sitesTable = $('#sitesTable').DataTable();
+        const selectedRow = sitesTable.rows({ selected: true }).data()[0];
+        const siteName = selectedRow.Name;
+
+        $.confirm({
+            title: `Remove '${siteName}'`,
+            content: 'Are you sure you want to remove the site from the list?',
+            draggable: false,
+            buttons: {
+                no: {
+                    text: "No",
+                    btnClass: "btn btn-secondary",
+                    action: function () {
+                        // 3. 2. Cancel and enable button
+                        $(triggerButton).prop("disabled", false);
+                    }
+                },
+                yes: {
+                    text: "Yes",
+                    btnClass: "btn btn-success",
+                    action: function () {
+                        // 3. 1. Delete site and then enable button
+
+                        $.ajax({
+                            url: '@Url.Action("RemoveSite","Home")',
+                            method: 'POST',
+                            data: { index: selectedRow.Index },
+                            cache: false
+                            })
+                            .done(function (newList) {
+                                sitesTable.ajax.reload();
+                            });
+
+                        $(triggerButton).prop("disabled", false);
+                    }
+                }
+            }
+        });
+
+        $(triggerButton).prop("disabled", false);
+
+    }
+
+    function editSite(triggerButton) {
+
+        // 1. Disable button
+        $(triggerButton).prop("disabled", true);
+
+        // 2. Get selection
+        const sitesTable = $('#sitesTable').DataTable();
+        const selectedRow = sitesTable.rows({ selected: true }).data()[0];
+        const index = selectedRow.Index;
+        const siteName = selectedRow.Name;
+        const siteUrl = selectedRow.Url;
+        const siteCategories = selectedRow.Categories;
+
+        // 3. Get modal content
+        const template = document.getElementById("addOrEditSite");
+        const editSiteDialog = template.content.cloneNode(true);
+
+        $.confirm({
+            title: `Edit '${siteName}'`,
+            content: editSiteDialog,
+            columnClass: "col-6 col-offset-3",
+            draggable: false,
+            buttons: {
+                cancel: {
+                    text: "Cancel",
+                    btnClass: "btn btn-secondary",
+                    action: function () {
+                        // 4. 1. Cancel and enable button
+                        $(triggerButton).prop("disabled", false);
+                    }
+                },
+                save: {
+                    text: "Save",
+                    btnClass: "btn btn-success",
+                    action: function () {
+                        const siteNewName = $("#siteNameInput").val();
+                        const siteNewUrl = $("#siteUrlInput").val();
+                        var newCategories = [];
+
+                        $.each($("#categorySelect").select2('data'),
+                            function (index, item) {
+                                newCategories.push(item.text);
+                            });
+
+                        // 4. 2. Save new values and then enable button
+
+                        const newData = {
+                            "Index": index,
+                            "Name": siteNewName,
+                            "Url": siteNewUrl,
+                            "Categories": newCategories
+                        };
+
+                        $.ajax({
+                                url: '@Url.Action("EditSite","Home")',
+                                method: 'POST',
+                                data: { site: newData },
+                                cache: false
+                            })
+                            .done(function(newList) {
+                                sitesTable.ajax.reload();
+                            });
+
+                        $(triggerButton).prop("disabled", false);
+                    }
+                }
+            },
+            onContentReady: function() {
+                $("#categorySelect").select2({
+                    placeholder: "Select an option",
+                    allowClear: false,
+                    multiple: true
+                });
+                $("#siteNameInput").val(siteName);
+                $("#siteUrlInput").val(siteUrl);
+                $('#categorySelect').val(siteCategories).trigger('change');
+            }
+        });
+
+
+    }
+
+    function addSite(triggerButton) {
+
+        // 1. Disable button
+        $(triggerButton).prop("disabled", true);
+
+        // 2. Get modal content
+        const template = document.getElementById("addOrEditSite");
+        const addSiteDialog = template.content.cloneNode(true);
+
+        $.confirm({
+            title: `Add a new site`,
+            columnClass: "col-6 col-offset-3",
+            content: addSiteDialog,
+            draggable: false,
+            buttons: {
+                cancel: {
+                    text: "Cancel",
+                    btnClass: "btn btn-secondary",
+                    action: function() {
+                        // 3. 1. Cancel and enable button
+                        $(triggerButton).prop("disabled", false);
+                    }
+                },
+                save: {
+                    text: "Save",
+                    btnClass: "btn btn-success",
+                    action: function() {
+                        // 3. 2. Get new site data
+
+                        const siteName = $("#siteNameInput").val();
+                        const siteUrl = $("#siteUrlInput").val();
+                        var categories = [];
+
+                        $.each($("#categorySelect").select2('data'),
+                            function(index, item) {
+                                categories.push(item.text);
+                            });
+
+                        // 4. Save new site and then enable button
+                        const sitesTable = $('#sitesTable').DataTable();
+                        const site = {
+                            "Index": -1,
+                            "Name": siteName,
+                            "Url": siteUrl,
+                            "Categories": categories
+                        };
+
+                        $.ajax({
+                                url: '@Url.Action("AddSite", "Home")',
+                                method: 'POST',
+                                data: { site: site },
+                                cache: false
+                            })
+                            .done(function(newList) {
+                                sitesTable.ajax.reload();
+                            });
+
+                        $(triggerButton).prop("disabled", false);
+                    }
+                }
+            },
+            onContentReady: function() {
+
+                $("#categorySelect").select2({
+                    placeholder: "Select an option",
+                    allowClear: false,
+                    multiple: true
+                });
+            }
+        });
+
+        $(triggerButton).prop("disabled", false);
+
+    }
+
+    function trainClassifier(triggerButton) {
+
+        $(triggerButton).prop("disabled", true);
+
+        $.ajax({
+                url: '@Url.Action("Train", "Home")',
+                method: 'POST',
+                cache: false
+            })
+            .done(function() {
+                $(triggerButton).prop("disabled", false);
+            });
+    }
+
+    function guessCategory(triggerButton) {
+
+        $(triggerButton).prop("disabled", true);
+
+        $.ajax({
+                url: '@Url.Action("GuessSiteCategory", "Home")',
+                method: 'POST',
+                data: {
+                    siteUrl: $("#guessSiteInput").val()
+                },
+                cache: false
+            })
+            .done(function () {
+                $(triggerButton).prop("disabled", false);
+            });
+
+    }
+
+</script>

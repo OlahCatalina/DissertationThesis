@@ -1,0 +1,15 @@
+﻿
+/* Selected row is grey instead of blue */
+#sitesTable.dataTable tbody tr.selected > * {
+    background-color: #ddd !important;
+    box-shadow: none;
+    color: #212529;
+}
+/* Brings dropdown in modal to front */
+.select2-dropdown {
+    z-index: 99999999 !important;
+}
+/**/
+.jconfirm .jconfirm-box div.jconfirm-content-pane .jconfirm-content {
+    overflow: unset;
+}

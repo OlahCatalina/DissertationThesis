@@ -1,0 +1,26 @@
+1 ||| Netflix ||| https://www.netflix.com/ro-en/ ||| Video streaming
+6 ||| Hulu ||| https://www.hulu.com/welcome?orig_referrer=https%3A%2F%2Fwww.google.com%2F ||| Video streaming
+7 ||| Hulu, Disney+, ESPN+ Bundle Terms and Conditions ||| https://www.hulu.com/terms/disney-bundle ||| Video streaming
+5 ||| Netflix Privacy Statement ||| https://help.netflix.com/en/legal/privacy ||| Video streaming
+4 ||| Netflix Corporate Information ||| https://help.netflix.com/en/legal/corpinfo ||| Video streaming
+3 ||| Netflix Terms of use ||| https://help.netflix.com/en/legal/termsofuse ||| Video streaming
+2 ||| Netflix FAQ ||| https://help.netflix.com/en/node/412 ||| Video streaming
+8 ||| Hulu Plans ||| https://signup.hulu.com/plans ||| Video streaming
+9 ||| Hulu Terms of Use ||| https://www.hulu.com/terms ||| Video streaming
+10 ||| Hulu Student Discount ||| https://www.hulu.com/student?utm_source=hulu&utm_medium=web&utm_campaign=plan_card ||| Video streaming
+11 ||| Hulu Notice of Right to Opt Out of “Sale” ||| https://www.hulu.com/do-not-sell-my-info ||| Video streaming
+12 ||| Prime Video ||| https://www.primevideo.com/?ref_=dvm_pds_amz_RO_lb_s_g_mkw_s1t13hMRN-dc_pcrid_514449671725&mrntrk=slid__pgrid_122203549649_pgeo_1011806_x__ptid_kwd-2850171361 ||| Video streaming
+14 ||| Prime Video Help ||| https://www.primevideo.com/help/ref=dvm_MLP_EU_help ||| Video streaming
+13 ||| Amazon Prime Video Service Provider Information and Applicable Terms and Policies ||| https://www.primevideo.com/help/ref=dvm_MLP_EU_privacy?nodeId=202064890 ||| Video streaming
+15 ||| HBO Max ||| https://www.hbomax.com/ro/en ||| Video streaming
+16 ||| Hbo Max Terms of Use ||| https://www.hbomax.com/terms-of-use ||| Video streaming
+17 ||| Hbo Go Privacy Policy ||| https://www.hbomax.com/privacy ||| Video streaming
+18 ||| HBO Max Corporate Information ||| https://www.hbomax.com/ro/ro/corp-info?countryRedirect=1 ||| Video streaming
+19 |||  Dan Flying Solo ||| https://www.danflyingsolo.com/ ||| Blog
+20 ||| Dan Flying Solo About ||| https://www.danflyingsolo.com/about/ ||| Blog
+21 ||| Dan Flying Solo Stories ||| https://www.danflyingsolo.com/category/style/stories/ ||| Blog
+22 ||| Dan Flying Solo Why I love Italy ||| https://www.danflyingsolo.com/best-experiences-italy-must-do-list/ ||| Blog
+23 |||  Dan Flying Solo The ‘post-pandemic’ lessons we can learn as travellers from the Tourism Recovery Programme ||| https://www.danflyingsolo.com/mexico-city-sustainable-tourism-recovery-programme-tui-enpact/ ||| Blog
+24 ||| Y Travel Blog ||| https://www.ytravelblog.com/ ||| Blog
+25 ||| Y Travel Blog Family Travel ||| https://www.ytravelblog.com/category/family-travel-2/ ||| Blog
+26 |||  Y Travel Blog Travel Planning  ||| https://www.ytravelblog.com/category/travel-planning/ ||| Blog
