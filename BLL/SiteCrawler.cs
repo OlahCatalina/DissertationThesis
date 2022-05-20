@@ -1,14 +1,14 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 
 namespace Dissertation_Thesis_SitesTextCrawler.Helpers
 {
-    public class Crawler
+    public class SiteCrawler
     {
         public static async Task<string> GetSiteText(string url)
         {
@@ -24,12 +24,12 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
                 var body = htmlDocument.DocumentNode.SelectSingleNode("//body");
                 var paragraphs = body.Descendants("p").ToList().Select(p => p.InnerText);
                 var spans = body.Descendants("span").ToList().Select(p => p.InnerText);
-                var h1s = body.Descendants("h1").ToList().Select(p => p.InnerText);
-                var h2s = body.Descendants("h2").ToList().Select(p => p.InnerText);
-                var h3s = body.Descendants("h3").ToList().Select(p => p.InnerText);
-                var h4s = body.Descendants("h4").ToList().Select(p => p.InnerText);
-                var h5s = body.Descendants("h5").ToList().Select(p => p.InnerText);
-                var hs = h1s + " " + h2s + " " + h3s + " " + h4s + " " + h5s + " ";
+                var h1S = body.Descendants("h1").ToList().Select(p => p.InnerText);
+                var h2S = body.Descendants("h2").ToList().Select(p => p.InnerText);
+                var h3S = body.Descendants("h3").ToList().Select(p => p.InnerText);
+                var h4S = body.Descendants("h4").ToList().Select(p => p.InnerText);
+                var h5S = body.Descendants("h5").ToList().Select(p => p.InnerText);
+                var hs = h1S + " " + h2S + " " + h3S + " " + h4S + " " + h5S + " ";
                 totalText += title + " " + string.Join(" ", paragraphs) + " " + string.Join(" ", spans) + " " + hs;
                 totalText = Regex.Replace(totalText, @"\s+", " ");
                 totalText = Regex.Replace(totalText, @"\n", " ");
@@ -46,10 +46,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
           
         }
 
-        public static async Task<List<string>> GetSiteFonts(string url)
-        {            
-            var listOfFonts = new List<string>();
-
+        public static async Task<string> GetSiteHtml(string url)
+        {
             try
             {
                 var httpClient = new HttpClient();
@@ -61,25 +59,31 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
                 var body = htmlDocument.DocumentNode.SelectSingleNode("//body").InnerHtml;
                 var allHtml = head + body;
 
-                const string pattern = "font-family:\\s?(['|\"]?(\\w* *)+['|\"]?)";
-                foreach (Match match in Regex.Matches(allHtml, pattern))
-                {
-                    if (match.Success && match.Groups.Count > 0)
-                    {
-                        var fontValue = match.Value;
-                        listOfFonts.Add(fontValue);
-                    }
-                }
-
-                listOfFonts = listOfFonts.Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
-                listOfFonts = listOfFonts.Select(f => f.Split(':')[1].Trim(' ').Trim('\"').Trim('\'')).ToList();
-
-                return listOfFonts;
+                return allHtml;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return new List<string>();
+                return "";
             }
+        }
+
+        public static List<string> GetSiteFonts(string siteHtml)
+        {
+            var listOfFonts = new List<string>();
+            const string pattern = "font-family:\\s?(['|\"]?(\\w* *)+['|\"]?)";
+
+            foreach (Match match in Regex.Matches(siteHtml, pattern))
+            {
+                if (!match.Success || match.Groups.Count <= 0) continue;
+
+                var fontValue = match.Value;
+                listOfFonts.Add(fontValue);
+            }
+
+            listOfFonts = listOfFonts.Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
+            listOfFonts = listOfFonts.Select(f => f.Split(':')[1].Trim(' ').Trim('\"').Trim('\'')).ToList();
+
+            return listOfFonts;
         }
 
     }

@@ -1,195 +1,165 @@
 ﻿using System;
+using Dissertation_Thesis_SitesTextCrawler.BLL;
+using Dissertation_Thesis_SitesTextCrawler.Data;
+using Dissertation_Thesis_SitesTextCrawler.Helpers;
+using Dissertation_Thesis_SitesTextCrawler.Models;
+using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Dissertation_Thesis_SitesTextCrawler.Helpers;
-using Dissertation_Thesis_SitesTextCrawler.Models;
+using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
 
 namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 {
     public class HomeController : Controller
     {
+        private Classifier _classifier;
+
         [HttpGet]
         public ActionResult Index()
         {
+            _classifier = Train();
             return View();
         }
 
         [HttpPost]
         public ActionResult GetSites()
         {
-            var listOfSites = GetListOfSitesFromSitesFile();
+            var dbContext = new WebAppContext();
+            var sitesManager = new SitesManager(dbContext);
+            var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
+
             return Json(new {data = listOfSites});
         }
 
         [HttpPost]
-        public ActionResult RemoveSite(int index)
+        public async Task<ActionResult> EditSite(SiteDto site)
         {
-            var listOfSites = GetListOfSitesFromSitesFile();
-            listOfSites = listOfSites.Where(s => s.Index != index).ToList();
-            var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                             FileHelper.PATH_TO_FILES +
-                             FileHelper.SITES_FILE_NAME;
-
-            FileHelper.WriteSitesInFile(listOfSites, pathToFile);
-            return Json(new {data = listOfSites});
-        }
-
-        [HttpPost]
-        public ActionResult EditSite(Site site)
-        {
-            var listOfSites = GetListOfSitesFromSitesFile();
-            listOfSites = listOfSites.Where(s => s.Index != site.Index).ToList();
-            var canEdit = site.Index > 0 && !string.IsNullOrEmpty(site.Name) && !string.IsNullOrEmpty(site.Url) &&
-                          site.Categories != null && site.Categories.Count > 0;
-
-            if (canEdit)
+            try
             {
-                listOfSites.Add(site);
-                listOfSites = listOfSites.OrderBy(s => s.Index).ToList();
-                var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                                 FileHelper.PATH_TO_FILES +
-                                 FileHelper.SITES_FILE_NAME;
+                var dbContext = new WebAppContext();
+                var sitesManager = new SitesManager(dbContext);
 
-                FileHelper.WriteSitesInFile(listOfSites, pathToFile);
+                var editedSite = await sitesManager.UpdateSiteInDb(site);
+
+                await Task.Run(() => { _classifier = Train();}).ConfigureAwait(false);
+
+                return Json(new { data = editedSite });
             }
+            catch (Exception)
+            {
+                return Json(null);
+            }
+        }
+        
+        [HttpPost]
+        public async Task<ActionResult> AddSite(SiteDto site)
+        {
+            try
+            {
+                var dbContext = new WebAppContext();
+                var sitesManager = new SitesManager(dbContext);
+                var addedSite = await sitesManager.AddSiteToDbAsync(site);
 
-            return Json(new {data = listOfSites});
+                await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
+
+                return Json(new { data = addedSite });
+            }
+            catch (Exception)
+            {
+                return Json(null );
+            }
         }
 
         [HttpPost]
-        public ActionResult AddSite(Site site)
+        public async Task<ActionResult> RemoveSite(int siteId)
         {
-            var listOfSites = GetListOfSitesFromSitesFile();
-            var arrayWithIndexes = listOfSites.Select(s => s.Index).ToArray();
-            var i = 1;
-            while (arrayWithIndexes.Contains(i)) i++;
-            site.Index = i;
-            listOfSites.Add(site);
-            listOfSites = listOfSites.OrderBy(s => s.Index).ToList();
-            var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                             FileHelper.PATH_TO_FILES +
-                             FileHelper.SITES_FILE_NAME;
+            try
+            {
+                var dbContext = new WebAppContext();
+                var sitesManager = new SitesManager(dbContext);
 
-            FileHelper.WriteSitesInFile(listOfSites, pathToFile);
-            return Json(new {data = listOfSites});
-        }
+                var removedSite = sitesManager.RemoveSiteFromDb(siteId);
 
-        [HttpPost]
-        public async Task<ActionResult> Train()
-        {
-            var listOfSites = GetListOfSitesFromSitesFile();
-            var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                             FileHelper.PATH_TO_FILES +
-                             FileHelper.CORPUS_FILE_NAME;
+                await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
 
-
-            await FeedClassifierCorpusWithSitesTextAndCategory(listOfSites, pathToFile);
-
-            return Json(new { data = listOfSites });
+                return Json(new { data = removedSite });
+            }
+            catch (Exception)
+            {
+                return Json(null);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult> GuessSiteCategory(string siteUrl)
         {
-            if (string.IsNullOrEmpty(siteUrl)) return Json(new { });
+            var finalGuessUnknown = new KeyValuePair<string, double>("Unknown", 1);
 
-            var listOfSites = GetListOfSitesFromSitesFile();
-            var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                             FileHelper.PATH_TO_FILES +
-                             FileHelper.CORPUS_FILE_NAME;
+            if (string.IsNullOrEmpty(siteUrl))
+            {
+                return Json( new { finalGuessUnknown });
+            }
 
-            // Get site text
-            var siteText = await Crawler.GetSiteText(siteUrl);
+            if (_classifier == null)
+            {
+                _classifier = Train();
+            }
 
-            // Feed Corpus with existing sites
-            await FeedClassifierCorpusWithSitesTextAndCategory(listOfSites, pathToFile);
-            var trainCorpus = GetTrainCorpusFromFile(pathToFile);
+            var dbContext = new WebAppContext();
+            var sitesManager = new SitesManager(dbContext);
 
-            var classifier = new Classifier(trainCorpus);
-
-            var categories = trainCorpus.Select(t => t.Class).Distinct();
+            var categories = sitesManager.GetAllCategoriesNames();
             var categoryProbabilityDictionary = new Dictionary<string, double>();
+
+            var siteText = await SiteCrawler.GetSiteText(siteUrl.Trim(' '));
 
             // Calculate probability for each category
             foreach (var category in categories)
             {
-                var probability = classifier.IsInClassProbability(category, siteText);
-                categoryProbabilityDictionary.Add(category, probability);
-            }
-
-            var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).First();
-
-            return Json(new {finalGuess});
-        }
-
-        private static List<Document> GetTrainCorpusFromFile(string pathToFile)
-        {
-            var lines = FileHelper.ReadFileLines(pathToFile);
-            var documents = new List<Document>();
-
-            foreach (var line in lines)
-            {
-                var parts = line.Split(new[] {" ||| "}, StringSplitOptions.None);
-                var fonts = parts[1].Split(new[] {" [x][x] "}, StringSplitOptions.None).ToList();
-                var doc = new Document(parts[0], fonts, parts[2]);
-                documents.Add(doc);
-            }
-
-            return documents;
-        }
-
-        private static async Task FeedClassifierCorpusWithSitesTextAndCategory(IEnumerable<Site> sites, string pathToCorpusFile)
-        {
-            // Save into text file
-            var listOfDocuments = new List<Document>();
-   
-            foreach (var site in sites)
-            {
-                var url = site.Url;
-                var siteText = await Crawler.GetSiteText(url);
-                var fontList = await Crawler.GetSiteFonts(url);
-
-                if (site.Categories != null && site.Categories.Count > 0)
+                var probability = _classifier.IsInClassProbability(category, siteText);
+                if(!double.IsNaN(probability))
                 {
-                    foreach (var category in site.Categories)
-                    {
-                        if (string.IsNullOrEmpty(siteText))
-                            continue;
-                        var document = new Document(category, fontList, siteText);
-                        listOfDocuments.Add(document);
-                    }
+                    categoryProbabilityDictionary.Add(category, probability);
                 }
-
             }
 
-            FileHelper.WriteDocumentsInCorpusFile(listOfDocuments, pathToCorpusFile);
-        }
-
-        private static List<Site> GetListOfSitesFromSitesFile()
-        {
-            var listOfSites = new List<Site>();
-            var pathToFile = AppDomain.CurrentDomain.BaseDirectory +
-                             FileHelper.PATH_TO_FILES +
-                             FileHelper.SITES_FILE_NAME;
-            var lines = FileHelper.ReadFileLines(pathToFile);
-
-            foreach (var line in lines)
+            if (categoryProbabilityDictionary.Count > 0)
             {
-                var parts = line.Split(new[] {" ||| "}, StringSplitOptions.None);
-                var site = new Site
-                {
-                    Index = Convert.ToInt32(parts[0]),
-                    Name = parts[1],
-                    Url = parts[2],
-                    Categories = parts[3].Split(new[] {" [x][x] "}, StringSplitOptions.None).ToList()
-                };
+                var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).Take(3).ToList();
 
-                listOfSites.Add(site);
+                return Json(new { predictions = finalGuess });
             }
 
-            return listOfSites;
+            return Json(new { finalGuessUnknown });
         }
+
+        private static Classifier Train()
+        {
+            var dbContext = new WebAppContext();
+            var sitesManager = new SitesManager(dbContext);
+            var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
+            var classifierTrainData = new List<Document>();
+
+            foreach (var site in listOfSites)
+            {
+                var dbSite = sitesManager.FindDbSiteByUrl(site.Url);
+                
+                if (dbSite == null) 
+                    continue;
+
+                var siteText = dbSite.SiteText;
+
+                foreach (var categoryName in site.Categories)
+                {
+                    var document = new Document(categoryName, siteText);
+                    classifierTrainData.Add(document);
+                }
+            }
+
+            return new Classifier(classifierTrainData);
+        }
+
     }
 }

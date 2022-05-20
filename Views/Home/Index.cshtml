@@ -17,7 +17,7 @@
         <!-- Info text -->
         <div class="row">
             <div class="col-12">
-                <p class="text-secondary mb-0">List of sites:</p>
+                <p class="text-secondary mb-0">List of site:</p>
             </div>
         </div>
           <!-- Buttons -->
@@ -54,7 +54,6 @@
                     </svg>
                 </button>
 
-              
                 <!-- Guess category button -->
                 <button id="guessCategoryButton" onclick="guessCategory(this)" class="btn btn-success float-end mx-1">
                     Predict
@@ -65,17 +64,8 @@
                     </svg>
                 </button>
                 <!-- Input for a link -->
-                <input type="text" style="width: 50%; max-width: 300px;" class="form-control float-end" id="guessSiteInput" placeholder="eg. http://site.com">
-            
-                <!-- Train button -->
-                <button id="trainButton" onclick="trainClassifier(this)" class="btn btn-secondary float-end mx-1">
-                    Train
-                    <!-- Icon for right arrow -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
-                    </svg>
-                </button>
+                <input type="text" style="width: 50%; max-width: 300px;" class="form-control float-end" id="guessSiteInput" placeholder="eg. http://www.site.com">
+
                 </div>
         </div>
         <!-- Table -->
@@ -84,7 +74,7 @@
                 <table id="sitesTable" class="table">
                     <thead class="bg-dark text-light">
                     <tr>
-                        <th scope="col">#</th>
+                        <th scope="col">Id</th>
                         <th scope="col">Site</th>
                         <th scope="col">URL</th>
                         <th scope="col">Categories</th>
@@ -114,7 +104,7 @@
                 <option value="Education">Education</option>
                 <option value="E-commerce">E-commerce</option>
                 <option value="Food and beverages industry">Food and beverages industry</option>
-                <option value="Government, official sites">Government, official site</option>
+                <option value="Government, official siteDtos">Government, official siteDto</option>
                 <option value="Health care and services">Health care and services</option>
                 <option value="News/media">News/media</option>
                 <option value="Personal branding/biography">Personal branding/biography</option>
@@ -136,6 +126,7 @@
 @Scripts.Render("~/Scripts/dataMining/DataGenerator.js")
 @Scripts.Render("~/Scripts/dataMining/SiteModel.js")
 @Scripts.Render("~/Scripts/dataMining/SiteTextCategory.js")
+@Scripts.Render("~/Scripts/chart.js/chart.min.js")
 
 <script type="text/javascript">
 
@@ -147,7 +138,7 @@
         // 1. Get data from file -> call to server -> retrieve from file
 
         const sitesTable = $('#sitesTable').DataTable({
-            "order": [[0, "asc"]],
+            "order": [[1, "asc"]],
             "ajax": {
                 url: '@Url.Action("GetSites","Home")',
                 method: 'POST',
@@ -155,7 +146,7 @@
             },
             "columns": [
                 {
-                    "data": 'Index'
+                    "data": 'Id'
                 },
                 {
                     "data": 'Name',
@@ -174,6 +165,13 @@
                     "render": function (data, type, row) {
                         return data.join(",");
                     }
+                }
+            ],
+            "columnDefs": [
+                {
+                    target: 0,
+                    visible: false,
+                    searchable: false
                 }
             ],
             select: {
@@ -224,19 +222,27 @@
                     text: "Yes",
                     btnClass: "btn btn-success",
                     action: function () {
-                        // 3. 1. Delete site and then enable button
+                        // 3. 1. Delete siteDto and then enable button
 
                         $.ajax({
                             url: '@Url.Action("RemoveSite","Home")',
                             method: 'POST',
-                            data: { index: selectedRow.Index },
+                            data: { siteId: selectedRow.Id },
                             cache: false
                             })
-                            .done(function (newList) {
-                                sitesTable.ajax.reload();
-                            });
+                            .done(function (srvRsp) {
+                                if (srvRsp.data == null) {
+                                    $.alert("Site not deleted. Might be an error or site not found.");
+                                } else {
+                                    sitesTable.ajax.reload();
+                                }
 
-                        $(triggerButton).prop("disabled", false);
+                                $(triggerButton).prop("disabled", false);
+                            })
+                            .fail(function (jqXhr, textStatus) {
+                                $.alert(`Error ${jqXhr.status}. Site not deleted.`);
+                                $(triggerButton).prop("disabled", false);
+                            });
                     }
                 }
             }
@@ -254,7 +260,7 @@
         // 2. Get selection
         const sitesTable = $('#sitesTable').DataTable();
         const selectedRow = sitesTable.rows({ selected: true }).data()[0];
-        const index = selectedRow.Index;
+        const id = selectedRow.Id;
         const siteName = selectedRow.Name;
         const siteUrl = selectedRow.Url;
         const siteCategories = selectedRow.Categories;
@@ -293,7 +299,7 @@
                         // 4. 2. Save new values and then enable button
 
                         const newData = {
-                            "Index": index,
+                            "Id": id,
                             "Name": siteNewName,
                             "Url": siteNewUrl,
                             "Categories": newCategories
@@ -305,8 +311,18 @@
                                 data: { site: newData },
                                 cache: false
                             })
-                            .done(function(newList) {
-                                sitesTable.ajax.reload();
+                            .done(function (srvRsp) {
+                                if (srvRsp.data == null) {
+                                    $.alert("Site not updated. Might be an error or site not found.");
+                                } else {
+                                    sitesTable.ajax.reload();
+                                }
+
+                                $(triggerButton).prop("disabled", false);
+                            })
+                            .fail(function (jqXhr, textStatus) {
+                                $.alert(`Error ${jqXhr.status}. Site not updated.`);
+                                $(triggerButton).prop("disabled", false);
                             });
 
                         $(triggerButton).prop("disabled", false);
@@ -369,7 +385,7 @@
                         // 4. Save new site and then enable button
                         const sitesTable = $('#sitesTable').DataTable();
                         const site = {
-                            "Index": -1,
+                            "Id":0,
                             "Name": siteName,
                             "Url": siteUrl,
                             "Categories": categories
@@ -381,11 +397,20 @@
                                 data: { site: site },
                                 cache: false
                             })
-                            .done(function(newList) {
-                                sitesTable.ajax.reload();
+                            .done(function (srvRsp) {
+                                if (srvRsp.data == null) {
+                                    $.alert("Site not added. Might be missing data or an error.");
+                                } else {
+                                    sitesTable.ajax.reload();
+                                }
+
+                                $(triggerButton).prop("disabled", false);
+                            })
+                            .fail(function (jqXhr, textStatus) {
+                                $.alert(`Error ${jqXhr.status}. Site not added.`);
+                                $(triggerButton).prop("disabled", false);
                             });
 
-                        $(triggerButton).prop("disabled", false);
                     }
                 }
             },
@@ -402,30 +427,7 @@
         $(triggerButton).prop("disabled", false);
 
     }
-
-    function trainClassifier(triggerButton) {
-
-        $(triggerButton).prop("disabled", true);
-
-        $.ajax({
-                url: '@Url.Action("Train", "Home")',
-                method: 'POST',
-                cache: false
-            })
-            .done(function(data) {
-                $(triggerButton).prop("disabled", false);
-                $.alert("Finished training of classifier.");
-            })
-            .fail(function (jqXhr, textStatus, errorThrown) {
-                var errMsg = `Error ${jqXhr.status}`;
-                if (errorThrown !== "" && errorThrown != null) {
-                    errMsg += `: ${errorThrown}.`;
-                }
-                $.alert(errMsg);
-                $(triggerButton).prop("disabled", false);
-            });
-    }
-
+    
     function guessCategory(triggerButton) {
 
         $(triggerButton).prop("disabled", true);
@@ -438,10 +440,72 @@
                 },
                 cache: false
             })
-            .done(function () {
+            .done(function(srvRsp) {
+                if (srvRsp.finalGuessUnknown) {
+                    $.alert("Could not predict site category. <br/>Might be missing data or an error.");
+                } else {
+                    $(triggerButton).prop("disabled", false);
+
+                    const listOfPredictions = srvRsp.predictions;
+                    var dataSet = new Array();
+                    var labels = new Array();
+                    for (let i = 0; i < listOfPredictions.length; i++) {
+                        labels.push(listOfPredictions[i].Key);
+                        dataSet.push(listOfPredictions[i].Value * 100);
+                    }
+
+                    $.confirm({
+                        title: `Predicted categories`,
+                        content: '<canvas id="chart" width="400" height="400"></canvas>',
+                        draggable: false,
+                        buttons: {
+                            close: {
+                                text: "Close",
+                                btnClass: "btn btn-secondary",
+                                action: function () {}
+                            }
+                        },
+                        onContentReady: function () {
+                            // Show chart
+                            const ctx = document.getElementById('chart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        data: dataSet,
+                                        backgroundColor: [
+                                            'rgba(90, 173, 69, 0.65)',
+                                            'rgba(173, 161, 69, 0.65)',
+                                            'rgba(173, 69, 86, 0.65)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(90, 173, 69, 1)',
+                                            'rgba(173, 161, 69, 1)',
+                                            'rgba(173, 69, 86, 1)'
+                                        ],
+                                        borderWidth: 2
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                }
+                $(triggerButton).prop("disabled", false);
+            })
+            .fail(function(jqXhr, textStatus) {
+                $.alert(`Error ${jqXhr.status}. Could not predict site category.`);
                 $(triggerButton).prop("disabled", false);
             });
 
     }
-
+    
 </script>
