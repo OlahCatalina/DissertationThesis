@@ -140,6 +140,7 @@
     <Compile Include="BLL\NaiveBayesianClassifier.cs" />
     <Compile Include="Models\ClassifierModels\ClassInfo.cs" />
     <Compile Include="Models\ClassifierModels\Document.cs" />
+    <Compile Include="Models\Statistics.cs" />
     <Compile Include="Models\DatabaseModels\DbCategory.cs" />
     <Compile Include="Models\DatabaseModels\DbSite.cs" />
     <Compile Include="Models\DatabaseModels\DbFont.cs" />

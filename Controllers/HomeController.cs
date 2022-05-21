@@ -135,6 +135,61 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             return Json(new { finalGuessUnknown });
         }
 
+        [HttpPost]
+        public ActionResult GetStatistics()
+        {
+            if (_classifier == null)
+            {
+                _classifier = Train();
+            }
+
+            var dbContext = new WebAppContext();
+            var fonts = dbContext.DbFonts.ToList();
+            var categories = dbContext.DbCategories.ToList();
+            var fontFrequencyDict = new Dictionary<string, int>();
+            var categoryFrequencyDict = new Dictionary<string, int>();
+            var categoryFontFrequencyDict = new List<Tuple<string, string, int>>();
+
+            foreach (var f in fonts)
+            {
+                var fontFrequency = dbContext.DbSiteFonts.Count(sf => sf.FontId == f.Id);
+                fontFrequencyDict.Add(f.FontName, fontFrequency);
+            }
+            foreach (var c in categories)
+            {
+                var categoryFrequency = dbContext.DbSiteCategories.Count(sc => sc.CategoryId == c.Id);
+                categoryFrequencyDict.Add(c.CategoryName, categoryFrequency);
+            }
+
+            foreach (var f in fonts)
+            {
+                foreach (var c in categories)
+                {
+                    var categoryFontFreq = dbContext.DbFontCategories.Count(fc => fc.CategoryId == c.Id && fc.FontId == f.Id);
+                    categoryFontFrequencyDict.Add(new Tuple<string,string,int>(f.FontName, c.CategoryName, categoryFontFreq));
+                }
+            }
+
+            var statistics = new Statistics()
+            {
+                ClassifierAccuracy =  _classifier.GetAccuracy(),
+                ClassifierTotalNumberOfClasses = _classifier.GetNumberOfClasses(),
+                ClassifierTotalNumberOfWords = _classifier.GetNumberOfAllWords(),
+                ClassifierTotalNumberOfUniqueWords= _classifier.GetNumberOfUniqueWords(),
+                ClassifierTotalNumberOfSiteCategoryPairs = _classifier.GetNumberOfDocuments(),
+                TotalNumberOfCategories = dbContext.DbCategories.Count(),
+                TotalNumberOfFonts = dbContext.DbFonts.Count(),
+                TotalNumberOfSites = dbContext.DbSites.Count(),
+                Categories = dbContext.DbCategories.Select(c=>c.CategoryName).ToList(),
+                Fonts = fonts.Select(c => c.FontName).ToList(),
+                FontFrequency = fontFrequencyDict,
+                CategoryFrequency = categoryFrequencyDict,
+                FontPerCategoryFrequency = categoryFontFrequencyDict
+            };
+
+            return Json(new { data = statistics });
+        }
+
         private static Classifier Train()
         {
             var dbContext = new WebAppContext();

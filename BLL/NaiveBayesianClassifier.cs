@@ -11,6 +11,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
         private readonly List<ClassInfo> _classes;
         private readonly int _countOfDocs;
         private readonly int _uniqWordsCount;
+        private readonly int _allWordsCount;
 
         public Classifier(IReadOnlyCollection<Document> train)
         {
@@ -20,6 +21,32 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
                 .ToList();
             _countOfDocs = train.Count;
             _uniqWordsCount = train.SelectMany(x => x.Text.Split(' ')).GroupBy(x => x).Count();
+            _allWordsCount = train.SelectMany(x => x.Text.Split(' ')).Count();
+        }
+
+        public int GetNumberOfDocuments()
+        {
+            return _countOfDocs;
+        }
+
+        public int GetNumberOfUniqueWords()
+        {
+            return _uniqWordsCount;
+        }
+
+        public int GetNumberOfAllWords()
+        {
+            return _allWordsCount;
+        }
+
+        public int GetNumberOfClasses()
+        {
+            return _classes.Count;
+        }
+
+        public int GetAccuracy()
+        {
+            return 100;
         }
 
         public double IsInClassProbability(string className, string text)
