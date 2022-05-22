@@ -15,7 +15,7 @@
     <div class="row pt-3">
         <div class="col">
             <h2 class="text-primary">Sites</h2>
-            <p class="text-secondary small">Manage the list of sites or try the prediction tool</p>
+            <p class="text-secondary small">Manage the list of sites or try the classification tool</p>
             <hr/> 
         </div>
     </div>
@@ -58,8 +58,8 @@
                 </button>
 
                 <!-- Guess category button -->
-                <button id="guessCategoryButton" onclick="guessCategory(this)" class="btn btn-success float-end mx-1">
-                    Predict
+                <button id="guessCategoryButton" title="Guess site category" onclick="guessCategory(this)" class="btn btn-success float-end mx-1">
+                    Guess
                     <!-- Icon for question mark -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle" viewBox="0 0 16 16">
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
@@ -210,7 +210,9 @@
                     searchable: false
                 }
             ],
-            "drawCallback": function( settings ) {
+            "drawCallback": function (settings) {
+                $("#editSiteButton").prop("disabled", true);
+                $("#removeSiteButton").prop("disabled", true);
                 getStatistics();
             },
             select: {
@@ -270,8 +272,8 @@
                             cache: false
                             })
                             .done(function (srvRsp) {
-                                if (srvRsp.data == null) {
-                                    $.alert("Site not deleted. Might be an error or site not found.");
+                                if (srvRsp.msg !== "Site successfully deleted.") {
+                                    $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
                                 }
@@ -279,7 +281,7 @@
                                 $(triggerButton).prop("disabled", false);
                             })
                             .fail(function (jqXhr, textStatus) {
-                                $.alert(`Error ${jqXhr.status}. Site not deleted.`);
+                                $.alert(`Error ${jqXhr.status}. Site not removed.`);
                                 $(triggerButton).prop("disabled", false);
                             });
                     }
@@ -344,6 +346,14 @@
                             "Categories": newCategories
                         };
 
+                        if (newData.Name === "" || newData.Name == null || newData.Name == undefined ||
+                            newData.Url === "" || newData.Url == null || newData.Url == undefined ||
+                            newData.Categories == null || newData.Categories == undefined || newData.Categories.length === 0) {
+                            $.alert("Data incomplete. Site cannot be updated.");
+                            return false;
+                        }
+
+
                         $.ajax({
                                 url: '@Url.Action("EditSite","Home")',
                                 method: 'POST',
@@ -351,8 +361,8 @@
                                 cache: false
                             })
                             .done(function (srvRsp) {
-                                if (srvRsp.data == null) {
-                                    $.alert("Site not updated. Might be an error or site not found.");
+                                if (srvRsp.msg !== "Site successfully updated.") {
+                                    $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
                                 }
@@ -379,7 +389,6 @@
                 $('#categorySelect').val(siteCategories).trigger('change');
             }
         });
-
 
     }
 
@@ -430,6 +439,13 @@
                             "Categories": categories
                         };
 
+                        if (site.Name === "" || site.Name == null || site.Name == undefined ||
+                            site.Url === "" || site.Url == null || site.Url == undefined ||
+                            site.Categories == null || site.Categories == undefined || site.Categories.length === 0) {
+                            $.alert("Data incomplete. Site cannot be added.");
+                            return false;
+                        }
+
                         $.ajax({
                                 url: '@Url.Action("AddSite", "Home")',
                                 method: 'POST',
@@ -437,8 +453,8 @@
                                 cache: false
                             })
                             .done(function (srvRsp) {
-                                if (srvRsp.data == null) {
-                                    $.alert("Site not added. Might be missing data or an error.");
+                                if (srvRsp.msg !== "Site successfully added.") {
+                                    $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
                                 }
@@ -471,7 +487,14 @@
 
         $(triggerButton).prop("disabled", true);
 
-        $.ajax({
+        var siteUrl = $("#guessSiteInput").val();
+
+        if (siteUrl === "" || siteUrl == null || siteUrl == undefined) {
+            $.alert("Please type the site URL first.");
+            $(triggerButton).prop("disabled", false);
+            return false;
+        } else {
+            $.ajax({
                 url: '@Url.Action("GuessSiteCategory", "Home")',
                 method: 'POST',
                 data: {
@@ -480,9 +503,10 @@
                 cache: false
             })
             .done(function(srvRsp) {
-                if (srvRsp.finalGuessUnknown) {
-                    $.alert("Could not predict site category. <br/>Might be missing data or an error.");
-                } else {
+                if (srvRsp.msg !== "Ok") {
+                    $.alert(srvRsp.msg);
+                }
+                else {
                     $(triggerButton).prop("disabled", false);
 
                     const listOfPredictions = srvRsp.predictions;
@@ -542,11 +566,13 @@
 
                 }
                 $(triggerButton).prop("disabled", false);
+                $("#guessSiteInput").val('');
             })
             .fail(function(jqXhr, textStatus) {
-                $.alert(`Error ${jqXhr.status}. Could not predict site category.`);
+                $.alert(`Error ${jqXhr.status}. Could not perform the classification.`);
                 $(triggerButton).prop("disabled", false);
             });
+        }
 
     }
 
@@ -639,7 +665,7 @@
         var data = srvRsp.data.CategoryFrequency;
         var categoriesLabels = new Array();
         var categoriesFrequencies = new Array();
-        
+
         for (let i = 0; i < data.length; i++) {
             categoriesLabels.push(data[i].Item1 + ": " + data[i].Item2);
             categoriesFrequencies.push(data[i].Item2);
@@ -727,7 +753,7 @@
                 }
             }
         });
-        
+
     }
 
     function _showFontsFrequency(srvRsp) {
@@ -735,7 +761,7 @@
         var data = srvRsp.data.FontFrequency;
         var fontsLabels = new Array();
         var fontsFrequencies = new Array();
-        
+
         for (let i = 0; i < data.length; i++) {
             fontsLabels.push(data[i].Item1 + ": " + data[i].Item2);
             fontsFrequencies.push(data[i].Item2);
@@ -821,8 +847,8 @@
     }
 
     function _showClassifierRelatedNumbers(srvRsp) {
-        
-        let chartStatus = Chart.getChart("classifierRelatedNumbers");  
+
+        let chartStatus = Chart.getChart("classifierRelatedNumbers");
         if (chartStatus != undefined) {
             chartStatus.destroy();
         }
@@ -885,7 +911,7 @@
                                 labelsOriginal[2].text = `${srvRsp.data.ClassifierTotalNumberOfClasses} used categories`;
                                 labelsOriginal[3].text = `${srvRsp.data.ClassifierTotalNumberOfSiteCategoryPairs} [site, category] pairs`;
                                 labelsOriginal[4].text = `${srvRsp.data.ClassifierAccuracy}% accuracy`;
-                       
+
                                 return labelsOriginal;
                             }
                         },

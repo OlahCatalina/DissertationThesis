@@ -1,10 +1,10 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace Dissertation_Thesis_SitesTextCrawler.BLL
 {
@@ -21,28 +21,23 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
                 htmlDocument.LoadHtml(html);
 
                 // Take site title
-                var title = htmlDocument.DocumentNode.SelectSingleNode("//head")?.Descendants("title").FirstOrDefault()?.InnerText;
+                var title = htmlDocument.DocumentNode.SelectSingleNode("//head")?.Descendants("title").FirstOrDefault()
+                    ?.InnerText;
                 totalText += title + " ";
 
                 // Take metadata (site keywords and description)
                 var metaDescriptionNode = htmlDocument.DocumentNode.SelectSingleNode("//meta[@name='description']");
                 if (metaDescriptionNode != null)
                 {
-                    var description  = metaDescriptionNode.Attributes["content"]?.Value;
-                    if (!string.IsNullOrEmpty(description))
-                    {
-                        totalText += " " + description;
-                    }
+                    var description = metaDescriptionNode.Attributes["content"]?.Value;
+                    if (!string.IsNullOrEmpty(description)) totalText += " " + description;
                 }
 
                 var metaKeyWordsNode = htmlDocument.DocumentNode.SelectSingleNode("//meta[@name='keywords']");
                 if (metaKeyWordsNode != null)
                 {
                     var keywords = metaKeyWordsNode.Attributes["content"]?.Value;
-                    if (!string.IsNullOrEmpty(keywords))
-                    {
-                        totalText += " " + keywords;
-                    }
+                    if (!string.IsNullOrEmpty(keywords)) totalText += " " + keywords;
                 }
 
                 // Take body text (<p>, <span>, <h1>, ..., <h5>)
@@ -64,15 +59,14 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
                 totalText = Regex.Replace(totalText, @"\n", " ");
                 totalText = Regex.Replace(totalText, @"\t", " ");
                 totalText = Regex.Replace(totalText, @"»", " ");
-                totalText= Regex.Replace(totalText, @"&amp;", " ");
+                totalText = Regex.Replace(totalText, @"&amp;", " ");
 
                 return totalText;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return "";
+                throw new Exception("Crawler error at reading site text. " + e.Message);
             }
-          
         }
 
         public static async Task<string> GetSiteHtml(string url)
@@ -90,10 +84,11 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
 
                 return allHtml;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return "";
+                throw new Exception("Crawler error at reading site HTML. " + e.Message);
             }
+           
         }
 
         public static List<string> GetSiteFonts(string siteHtml)
@@ -111,9 +106,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
 
             listOfFonts = listOfFonts.Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
             listOfFonts = listOfFonts.Select(f => f.Split(':')[1].Trim(' ').Trim('\"').Trim('\'')).ToList();
-            listOfFonts = listOfFonts.Where(f=> string.Compare(f, "inherit", StringComparison.InvariantCultureIgnoreCase) != 0).ToList();
+            listOfFonts = listOfFonts
+                .Where(f => string.Compare(f, "inherit", StringComparison.InvariantCultureIgnoreCase) != 0).ToList();
             return listOfFonts;
         }
-
     }
 }

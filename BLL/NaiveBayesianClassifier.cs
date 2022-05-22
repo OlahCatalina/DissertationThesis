@@ -44,9 +44,18 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             return _classes.Count;
         }
 
-        public int GetAccuracy()
+        public int GetAccuracy(List<Tuple<string, string>> siteTextAndCategory)
         {
-            return 100;
+            double sum = 0;
+            foreach (var tuple in siteTextAndCategory)
+            {
+                var probability = IsInClassProbability(tuple.Item2, tuple.Item1);
+                sum += probability;
+            }
+
+            var accuracy = sum * 100 / siteTextAndCategory.Count;
+            int acc = Convert.ToInt32(accuracy);
+            return acc;
         }
 
         public double IsInClassProbability(string className, string text)

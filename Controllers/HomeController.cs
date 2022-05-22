@@ -40,15 +40,14 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var dbContext = new WebAppContext();
                 var sitesManager = new SitesManager(dbContext);
 
-                var editedSite = await sitesManager.UpdateSiteInDb(site);
-
-                await Task.Run(() => { _classifier = Train();}).ConfigureAwait(false);
-
-                return Json(new { data = editedSite });
+                await sitesManager.UpdateSiteInDb(site);
+                await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
+                
+                return Json(new { msg = "Site successfully updated." });
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return Json(null);
+                return Json(new { msg = e.Message });
             }
         }
         
@@ -59,15 +58,15 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             {
                 var dbContext = new WebAppContext();
                 var sitesManager = new SitesManager(dbContext);
-                var addedSite = await sitesManager.AddSiteToDbAsync(site);
 
+                await sitesManager.AddSiteToDbAsync(site);
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
 
-                return Json(new { data = addedSite });
+                return Json(new { msg = "Site successfully added." });
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return Json(null );
+                return Json(new { msg = e.Message });
             }
         }
 
@@ -79,26 +78,23 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var dbContext = new WebAppContext();
                 var sitesManager = new SitesManager(dbContext);
 
-                var removedSite = sitesManager.RemoveSiteFromDb(siteId);
-
+                sitesManager.RemoveSiteFromDb(siteId);
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
-
-                return Json(new { data = removedSite });
+                
+                return Json(new { msg = "Site successfully deleted." });
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return Json(null);
+                return Json(new { msg = e.Message });
             }
         }
 
         [HttpPost]
         public async Task<ActionResult> GuessSiteCategory(string siteUrl)
         {
-            var finalGuessUnknown = new KeyValuePair<string, double>("Unknown", 1);
-
             if (string.IsNullOrEmpty(siteUrl))
             {
-                return Json( new { finalGuessUnknown });
+                return Json( new { msg = "Site data incomplete, could not perform the classification." });
             }
 
             if (_classifier == null)
@@ -106,32 +102,42 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 _classifier = Train();
             }
 
-            var dbContext = new WebAppContext();
-            var sitesManager = new SitesManager(dbContext);
-
-            var categories = sitesManager.GetAllCategoriesNames();
-            var categoryProbabilityDictionary = new Dictionary<string, double>();
-
-            var siteText = await SiteCrawler.GetSiteText(siteUrl.Trim(' '));
-
-            // Calculate probability for each category
-            foreach (var category in categories)
+            try
             {
-                var probability = _classifier.IsInClassProbability(category, siteText);
-                if(!double.IsNaN(probability))
+                var dbContext = new WebAppContext();
+                var sitesManager = new SitesManager(dbContext);
+
+                var categories = sitesManager.GetAllCategoriesNames();
+                var categoryProbabilityDictionary = new Dictionary<string, double>();
+
+                var siteText = await SiteCrawler.GetSiteText(siteUrl.Trim(' '));
+
+                // Calculate probability for each category
+                foreach (var category in categories)
                 {
-                    categoryProbabilityDictionary.Add(category, probability);
+                    var probability = _classifier.IsInClassProbability(category, siteText);
+                    if (!double.IsNaN(probability))
+                    {
+                        categoryProbabilityDictionary.Add(category, probability);
+                    }
                 }
-            }
 
-            if (categoryProbabilityDictionary.Count > 0)
+                if (categoryProbabilityDictionary.Count > 0)
+                {
+                    var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).Take(3).ToList();
+
+                    return Json(new {msg = "Ok", predictions = finalGuess});
+                }
+
+                return Json(new { msg = "Could not perform the classification." });
+
+            }
+            catch (Exception e)
             {
-                var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).Take(3).ToList();
-
-                return Json(new { predictions = finalGuess });
+                return Json(new { msg = e.Message });
             }
 
-            return Json(new { finalGuessUnknown });
+          
         }
 
         [HttpPost]
@@ -143,6 +149,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             }
 
             var dbContext = new WebAppContext();
+
             var fonts = dbContext.DbFonts.ToList();
             var categories = dbContext.DbCategories.ToList();
             var fontFrequencyDict = new List<Tuple<string, int>>();
@@ -169,9 +176,26 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 }
             }
 
+            var sitesManager = new SitesManager(dbContext);
+            var sites = dbContext.DbSites.ToList();
+            var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
+            var siteTextAndCategory = new List<Tuple<string, string>>();
+            foreach (var s in listOfSites)
+            {
+                var dbSite = sites.FirstOrDefault(dbS => dbS.SiteUrl == s.Url);
+                if (dbSite != null)
+                {
+                    foreach (var category in s.Categories)
+                    {
+                        var t = new Tuple<string, string>(dbSite.SiteText, category);
+                        siteTextAndCategory.Add(t);
+                    }
+                }
+            }
+
             var statistics = new Statistics()
             {
-                ClassifierAccuracy =  _classifier.GetAccuracy(),
+                ClassifierAccuracy =  _classifier.GetAccuracy(siteTextAndCategory),
                 ClassifierTotalNumberOfClasses = _classifier.GetNumberOfClasses(),
                 ClassifierTotalNumberOfWords = _classifier.GetNumberOfAllWords(),
                 ClassifierTotalNumberOfUniqueWords= _classifier.GetNumberOfUniqueWords(),
