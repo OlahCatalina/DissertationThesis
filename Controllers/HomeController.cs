@@ -143,6 +143,38 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         }
 
         [HttpPost]
+        [AllowCrossSite]
+        public ActionResult SuggestFontsBasedOnCategoriesList(List<string> categories)
+        {
+            if (categories == null || categories.Count == 0)
+            {
+                return Json(new { msg = "Categories list is empty."});
+            }
+
+            if (_classifier == null)
+            {
+                _classifier = Train();
+            }
+
+            try
+            {
+                var dbContext = new WebAppContext();
+                var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id);
+                var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId);
+                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).ToList();
+
+                return Json(new { msg = "Ok", fonts = dbFonts });
+            }
+            catch (Exception e)
+            {
+                return Json(new { msg = e.Message });
+            }
+
+
+        }
+
+
+        [HttpPost]
         public ActionResult GetStatistics()
         {
             if (_classifier == null)
