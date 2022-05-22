@@ -90,6 +90,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         }
 
         [HttpPost]
+        [AllowCrossSite]
         public async Task<ActionResult> GuessSiteCategory(string siteUrl)
         {
             if (string.IsNullOrEmpty(siteUrl))
