@@ -1,7 +1,6 @@
 ﻿using System;
 using Dissertation_Thesis_SitesTextCrawler.BLL;
 using Dissertation_Thesis_SitesTextCrawler.Data;
-using Dissertation_Thesis_SitesTextCrawler.Helpers;
 using Dissertation_Thesis_SitesTextCrawler.Models;
 using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
 using System.Collections.Generic;
@@ -146,19 +145,19 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             var dbContext = new WebAppContext();
             var fonts = dbContext.DbFonts.ToList();
             var categories = dbContext.DbCategories.ToList();
-            var fontFrequencyDict = new Dictionary<string, int>();
-            var categoryFrequencyDict = new Dictionary<string, int>();
+            var fontFrequencyDict = new List<Tuple<string, int>>();
+            var categoryFrequencyDict = new List<Tuple<string, int>>();
             var categoryFontFrequencyDict = new List<Tuple<string, string, int>>();
 
             foreach (var f in fonts)
             {
                 var fontFrequency = dbContext.DbSiteFonts.Count(sf => sf.FontId == f.Id);
-                fontFrequencyDict.Add(f.FontName, fontFrequency);
+                fontFrequencyDict.Add(new Tuple<string, int>(f.FontName, fontFrequency));
             }
             foreach (var c in categories)
             {
                 var categoryFrequency = dbContext.DbSiteCategories.Count(sc => sc.CategoryId == c.Id);
-                categoryFrequencyDict.Add(c.CategoryName, categoryFrequency);
+                categoryFrequencyDict.Add(new Tuple<string, int>(c.CategoryName, categoryFrequency));
             }
 
             foreach (var f in fonts)
@@ -182,9 +181,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 TotalNumberOfSites = dbContext.DbSites.Count(),
                 Categories = dbContext.DbCategories.Select(c=>c.CategoryName).ToList(),
                 Fonts = fonts.Select(c => c.FontName).ToList(),
-                FontFrequency = fontFrequencyDict,
-                CategoryFrequency = categoryFrequencyDict,
-                FontPerCategoryFrequency = categoryFontFrequencyDict
+                FontFrequency = fontFrequencyDict.OrderByDescending(cf => cf.Item2).ToList(),
+                CategoryFrequency = categoryFrequencyDict.OrderByDescending(cf=>cf.Item2).ToList(),
+                FontPerCategoryFrequency = categoryFontFrequencyDict.OrderBy(fpcf => fpcf.Item1).ThenBy(fpcf => fpcf.Item2).ToList()
             };
 
             return Json(new { data = statistics });

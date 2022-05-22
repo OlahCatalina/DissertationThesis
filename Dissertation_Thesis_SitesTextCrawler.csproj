@@ -156,7 +156,6 @@
     <Content Include="Content\bootstrap\bootstrap.min.css" />
     <Content Include="Content\dataTables\dataTables.min.css" />
     <Content Include="Content\files\corpus.txt" />
-    <Content Include="Content\files\results.txt" />
     <Content Include="Content\files\sites.txt" />
     <Content Include="Content\jqueryConfirm\jquery-confirm.min.css" />
     <Content Include="Content\select2\select2.min.css" />

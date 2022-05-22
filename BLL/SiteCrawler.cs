@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Helpers
+namespace Dissertation_Thesis_SitesTextCrawler.BLL
 {
     public class SiteCrawler
     {
@@ -19,18 +19,47 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
                 var html = await httpClient.GetStringAsync(url);
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml(html);
-                // TAKE META WITH CONTENT NAME=KEYWORDS & NAME=DESCRIPTION
-                var title = htmlDocument.DocumentNode.SelectSingleNode("//head").Descendants("title").FirstOrDefault()?.InnerText;
+
+                // Take site title
+                var title = htmlDocument.DocumentNode.SelectSingleNode("//head")?.Descendants("title").FirstOrDefault()?.InnerText;
+                totalText += title + " ";
+
+                // Take metadata (site keywords and description)
+                var metaDescriptionNode = htmlDocument.DocumentNode.SelectSingleNode("//meta[@name='description']");
+                if (metaDescriptionNode != null)
+                {
+                    var description  = metaDescriptionNode.Attributes["content"]?.Value;
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        totalText += " " + description;
+                    }
+                }
+
+                var metaKeyWordsNode = htmlDocument.DocumentNode.SelectSingleNode("//meta[@name='keywords']");
+                if (metaKeyWordsNode != null)
+                {
+                    var keywords = metaKeyWordsNode.Attributes["content"]?.Value;
+                    if (!string.IsNullOrEmpty(keywords))
+                    {
+                        totalText += " " + keywords;
+                    }
+                }
+
+                // Take body text (<p>, <span>, <h1>, ..., <h5>)
                 var body = htmlDocument.DocumentNode.SelectSingleNode("//body");
-                var paragraphs = body.Descendants("p").ToList().Select(p => p.InnerText);
-                var spans = body.Descendants("span").ToList().Select(p => p.InnerText);
-                var h1S = body.Descendants("h1").ToList().Select(p => p.InnerText);
-                var h2S = body.Descendants("h2").ToList().Select(p => p.InnerText);
-                var h3S = body.Descendants("h3").ToList().Select(p => p.InnerText);
-                var h4S = body.Descendants("h4").ToList().Select(p => p.InnerText);
-                var h5S = body.Descendants("h5").ToList().Select(p => p.InnerText);
-                var hs = h1S + " " + h2S + " " + h3S + " " + h4S + " " + h5S + " ";
-                totalText += title + " " + string.Join(" ", paragraphs) + " " + string.Join(" ", spans) + " " + hs;
+                if (body != null)
+                {
+                    var paragraphs = body.Descendants("p").ToList().Select(p => p.InnerText);
+                    var spans = body.Descendants("span").ToList().Select(p => p.InnerText);
+                    var h1S = body.Descendants("h1").ToList().Select(p => p.InnerText);
+                    var h2S = body.Descendants("h2").ToList().Select(p => p.InnerText);
+                    var h3S = body.Descendants("h3").ToList().Select(p => p.InnerText);
+                    var h4S = body.Descendants("h4").ToList().Select(p => p.InnerText);
+                    var h5S = body.Descendants("h5").ToList().Select(p => p.InnerText);
+                    var hs = h1S + " " + h2S + " " + h3S + " " + h4S + " " + h5S + " ";
+                    totalText += string.Join(" ", paragraphs) + " " + string.Join(" ", spans) + " " + hs;
+                }
+
                 totalText = Regex.Replace(totalText, @"\s+", " ");
                 totalText = Regex.Replace(totalText, @"\n", " ");
                 totalText = Regex.Replace(totalText, @"\t", " ");
@@ -39,7 +68,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
 
                 return totalText;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return "";
             }
@@ -55,8 +84,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
                 var htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml(html);
 
-                var head = htmlDocument.DocumentNode.SelectSingleNode("//head").InnerHtml;
-                var body = htmlDocument.DocumentNode.SelectSingleNode("//body").InnerHtml;
+                var head = htmlDocument.DocumentNode.SelectSingleNode("//head")?.InnerHtml ?? "";
+                var body = htmlDocument.DocumentNode.SelectSingleNode("//body")?.InnerHtml ?? "";
                 var allHtml = head + body;
 
                 return allHtml;
@@ -82,7 +111,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Helpers
 
             listOfFonts = listOfFonts.Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
             listOfFonts = listOfFonts.Select(f => f.Split(':')[1].Trim(' ').Trim('\"').Trim('\'')).ToList();
-
+            listOfFonts = listOfFonts.Where(f=> string.Compare(f, "inherit", StringComparison.InvariantCultureIgnoreCase) != 0).ToList();
             return listOfFonts;
         }
 

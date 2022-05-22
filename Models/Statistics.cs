@@ -25,9 +25,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.Models
 
         public List<string> Fonts{ get; set; }
 
-        public Dictionary<string, int> FontFrequency { get; set; }
+        public List<Tuple<string, int>> FontFrequency { get; set; }
 
-        public Dictionary<string, int> CategoryFrequency { get; set; }
+        public List<Tuple<string, int>> CategoryFrequency { get; set; }
 
         public List<Tuple<string, string, int>> FontPerCategoryFrequency { get; set; }
 

@@ -5,7 +5,7 @@
 <!-- Title -->
 <div class="row pt-3">
     <div class="col text-center">
-        <h1 class="text-primary">Data generator</h1>
+        <h1 class="text-primary">Sites data manager</h1>
         <p class="text-secondary small">Here we can manage the data that goes into the Bayes classifier.</p>
         <br />
     </div>
@@ -22,7 +22,6 @@
 </div>
 <!-- List of sites -->
 <div class="row">
-
     <div class="col-12">
         <!-- Buttons -->
         <div class="row">
@@ -90,6 +89,7 @@
 
     </div>
 </div>
+
 <!-- Statistics -->
 <div class="row" id="statistics">
 
@@ -98,19 +98,27 @@
         <div class="row pt-3">
             <div class="col">
                 <h2 class="text-primary">Statistics</h2>
-                <p class="text-secondary small">Section with the latest useful numbers</p>
+                <p class="text-secondary small">Section with the latest useful numbers and data overview</p>
                 <hr/><br/>
             </div>
         </div>
     </div>
-
     <div class="row">
-        <div class="col">
-            <canvas id="sitesCategoriesFonts" style="max-height: 300px; max-width: 300px;"></canvas>
+        <div class="col m-3">
+            <canvas id="sitesCategoriesFonts" style="max-height: 400px;"></canvas>
         </div>
-        @*<div class="col">
-        <div id="sitesCategoriesFonts"></div>
-    </div>*@
+        <div class="col m-3">
+            <canvas id="classifierRelatedNumbers" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col m-3">
+            <canvas id="categoriesFrequency" style="max-height: 400px;"></canvas>
+        </div>
+        <div class="col m-3">
+            <canvas id="fontsFrequency" style="max-height: 400px;"></canvas>
+        </div>
     </div>
 </div>
 
@@ -131,7 +139,7 @@
                 <option value="Education">Education</option>
                 <option value="E-commerce">E-commerce</option>
                 <option value="Food and beverages industry">Food and beverages industry</option>
-                <option value="Government, official siteDtos">Government, official siteDto</option>
+                <option value="Government, official site">Government, official site</option>
                 <option value="Health care and services">Health care and services</option>
                 <option value="News/media">News/media</option>
                 <option value="Personal branding/biography">Personal branding/biography</option>
@@ -185,7 +193,7 @@
                 {
                     "data": 'Url',
                     "render": function (data, type, row) {
-                        return `<a class="fst-italic" target="_blank" href="${data}">${data}</a>`;
+                        return `<a class="fst-italic" style="width: 450px; white-space: nowrap; display: inline-block; overflow:hidden;  text-overflow: ellipsis;" target="_blank" href="${data}">${data}</a>`;
                     }
                 },
                 {
@@ -253,7 +261,7 @@
                     text: "Yes",
                     btnClass: "btn btn-success",
                     action: function () {
-                        // 3. 1. Delete siteDto and then enable button
+                        // 3. 1. Delete site and then enable button
 
                         $.ajax({
                             url: '@Url.Action("RemoveSite","Home")',
@@ -554,7 +562,9 @@
                 $("#statistics").show();
 
                 _showSitesFontsCategoriesBarChart(srvRsp);
-
+                _showCategoriesFrequency(srvRsp);
+                _showFontsFrequency(srvRsp);
+                _showClassifierRelatedNumbers(srvRsp);
             })
             .fail(function(jqXhr, textStatus) {
                // $.alert(`Error ${jqXhr.status}. Could not get statistics.`);
@@ -564,26 +574,27 @@
 
     function _showSitesFontsCategoriesBarChart(srvRsp) {
 
-        let chartStatus = Chart.getChart("sitesCategoriesFonts"); // <canvas> id
+        let chartStatus = Chart.getChart("sitesCategoriesFonts");
         if (chartStatus != undefined) {
             chartStatus.destroy();
         }
+
         var ctx = document.getElementById('sitesCategoriesFonts').getContext('2d');
-        var chart = new Chart(ctx, {
-            type: 'bar',
+        new Chart(ctx, {
+            type: 'polarArea',
             data: {
                 labels: ["Number of sites", "Number of categories", "Number of fonts"],
                 datasets: [{
                     data: [srvRsp.data.TotalNumberOfSites, srvRsp.data.TotalNumberOfCategories, srvRsp.data.TotalNumberOfFonts],
                     backgroundColor: [
-                        'rgba(90, 173, 69, 0.65)',
-                        'rgba(173, 161, 69, 0.65)',
-                        'rgba(173, 69, 86, 0.65)'
+                        'rgba(173, 158, 40, 0.65)',
+                        'rgba(37, 92, 107, 0.65)',
+                        'rgba(107, 37, 84, 0.65)'
                     ],
                     borderColor: [
-                        'rgba(90, 173, 69, 1)',
-                        'rgba(173, 161, 69, 1)',
-                        'rgba(173, 69, 86, 1)'
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)'
                     ],
                     borderWidth: 2
                 }]
@@ -596,11 +607,312 @@
                 },
                 plugins: {
                     legend: {
-                        display: false
+                        display: true,
+                        position: "bottom",
+                        labels: {
+                            generateLabels: function(chart) {
+                                // Get the default label list
+                                const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
+                                const labelsOriginal = original.call(this, chart);
+
+                                labelsOriginal[0].text = `${srvRsp.data.TotalNumberOfSites} sites`;
+                                labelsOriginal[1].text = `${srvRsp.data.TotalNumberOfCategories} assigned categories`;
+                                labelsOriginal[2].text = `${srvRsp.data.TotalNumberOfFonts} found fonts`;
+
+                                return labelsOriginal;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Number of sites, categories, fonts',
+                        font: { size: "16px" },
+                        padding: {bottom: 30}
                     }
                 }
             }
         });
+    }
+
+    function _showCategoriesFrequency(srvRsp) {
+
+        var data = srvRsp.data.CategoryFrequency;
+        var categoriesLabels = new Array();
+        var categoriesFrequencies = new Array();
+        
+        for (let i = 0; i < data.length; i++) {
+            categoriesLabels.push(data[i].Item1 + ": " + data[i].Item2);
+            categoriesFrequencies.push(data[i].Item2);
+        }
+
+        let chartStatus = Chart.getChart("categoriesFrequency");
+        if (chartStatus != undefined) {
+            chartStatus.destroy();
+        }
+        var ctx = document.getElementById('categoriesFrequency').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categoriesLabels,
+                datasets: [{
+                    data: categoriesFrequencies,
+                    backgroundColor: [
+                        'rgba(173, 78, 40, 0.65)',
+                        'rgba(173, 102, 40, 0.65)',
+                        'rgba(173, 124, 40, 0.65)',
+                        'rgba(173, 144, 40, 0.65)',
+                        'rgba(173, 173, 40, 0.65)',
+                        'rgba(104, 173, 40, 0.65)',
+                        'rgba(67, 173, 40, 0.65)',
+                        'rgba(40, 173, 44, 0.65)',
+                        'rgba(40, 173, 84, 0.65)',
+                        'rgba(40, 173, 113, 0.65)',
+                        'rgba(40, 173, 151, 0.65)',
+                        'rgba(40, 173, 173, 0.65)',
+                        'rgba(40, 149, 173, 0.65)',
+                        'rgba(40, 122, 173, 0.65)'
+
+                    ],
+                    borderColor: [
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Categories frequency',
+                        font: { size: "16px" },
+                        padding: { bottom: 30 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = `assigned to ${context.label.split(': ')[1]} site`;
+                                if (context.label.split(': ')[1] > 1)
+                                    label += "s";
+                                return label;
+                            },
+                            title: function (context) {
+                                let label = `${context[0].label.split(': ')[0]}`;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+    }
+
+    function _showFontsFrequency(srvRsp) {
+
+        var data = srvRsp.data.FontFrequency;
+        var fontsLabels = new Array();
+        var fontsFrequencies = new Array();
+        
+        for (let i = 0; i < data.length; i++) {
+            fontsLabels.push(data[i].Item1 + ": " + data[i].Item2);
+            fontsFrequencies.push(data[i].Item2);
+        }
+
+        var ctx = document.getElementById('fontsFrequency').getContext('2d');
+        let chartStatus = Chart.getChart("fontsFrequency");
+        if (chartStatus != undefined) {
+            chartStatus.destroy();
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: fontsLabels,
+                datasets: [{
+                    data: fontsFrequencies,
+                    backgroundColor: [
+                        'rgba(75, 85, 94, 0.65)',
+                        'rgba(110, 125, 138, 0.65)',
+                        'rgba(137, 155, 171, 0.65)',
+                        'rgba(137, 170, 171, 0.65)',
+                        'rgba(96, 136, 138, 0.65)',
+                        'rgba(96, 138, 125, 0.65)',
+                        'rgba(114, 138, 96, 0.65)',
+                        'rgba(125, 138, 96, 0.65)',
+                        'rgba(138, 134, 96, 0.65)',
+                        'rgba(138, 123, 96, 0.65)',
+                        'rgba(138, 113, 96, 0.65)',
+                        'rgba(138, 96, 96, 0.65)'
+                    ],
+                    borderColor: [
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)',
+                        'rgba(62, 64, 64, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                indexAxis: 'x',
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Fonts frequency',
+                        font: { size: "16px" },
+                        padding: { bottom: 30 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = `found in ${context.label.split(': ')[1]} site`;
+                                if (context.label.split(': ')[1] > 1)
+                                    label += "s";
+                                return label;
+                            },
+                            title: function (context) {
+                                let label = `${context[0].label.split(': ')[0]}`;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function _showClassifierRelatedNumbers(srvRsp) {
+        
+        let chartStatus = Chart.getChart("classifierRelatedNumbers");  
+        if (chartStatus != undefined) {
+            chartStatus.destroy();
+        }
+
+        var ctx = document.getElementById('classifierRelatedNumbers').getContext('2d');
+        const data = {
+            labels: ["Total number of words", "Total number of unique words", "Number of used categories", "Number of (site,category) pairs", "Accuracy"],
+            datasets: [
+                {
+                    backgroundColor: ['rgba(21, 96, 100, 0.65)', 'rgba(36, 162, 168, 0.65)'],
+                    borderColor: 'rgba(62, 64, 64, 1)',
+                    data: [srvRsp.data.ClassifierTotalNumberOfWords, srvRsp.data.ClassifierTotalNumberOfUniqueWords]
+                },
+                {
+                    backgroundColor: ['rgba(247, 187, 59, 0.65)', 'rgba(248, 225, 108, 0.65)'],
+                    data: [srvRsp.data.ClassifierTotalNumberOfClasses, srvRsp.data.ClassifierTotalNumberOfSiteCategoryPairs],
+                    borderColor: 'rgba(62, 64, 64, 1)'
+                },
+                {
+                    backgroundColor: ['rgba(251, 143, 103, 0.65)'],
+                    data: [srvRsp.data.ClassifierAccuracy],
+                    borderColor: 'rgba(62, 64, 64, 1)'
+                }
+            ]
+        };
+
+        const config = {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            generateLabels: function(chart) {
+                                // Get the default label list
+                                const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
+                                const labelsOriginal = original.call(this, chart);
+
+                                // Build an array of colors used in the datasets of the chart
+                                var datasetColors = chart.data.datasets.map(function(e) {
+                                    return e.backgroundColor;
+                                });
+                                datasetColors = datasetColors.flat();
+
+                                // Modify the color and hide state of each label
+                                labelsOriginal.forEach(label => {
+                                    // There are twice as many labels as there are datasets. This converts the label index into the corresponding dataset index
+                                    label.datasetIndex = (label.index - label.index % 2) / 2;
+
+                                    // The hidden state must match the dataset's hidden state
+                                    label.hidden = !chart.isDatasetVisible(label.datasetIndex);
+
+                                    // Change the color to match the dataset
+                                    label.fillStyle = datasetColors[label.index];
+                                });
+
+                                labelsOriginal[0].text = `${srvRsp.data.ClassifierTotalNumberOfWords} words in total`;
+                                labelsOriginal[1].text = `${srvRsp.data.ClassifierTotalNumberOfUniqueWords} unique words`;
+                                labelsOriginal[2].text = `${srvRsp.data.ClassifierTotalNumberOfClasses} used categories`;
+                                labelsOriginal[3].text = `${srvRsp.data.ClassifierTotalNumberOfSiteCategoryPairs} [site, category] pairs`;
+                                labelsOriginal[4].text = `${srvRsp.data.ClassifierAccuracy}% accuracy`;
+                       
+                                return labelsOriginal;
+                            }
+                        },
+                        onClick: function(mouseEvent, legendItem, legend) {
+                            // toggle the visibility of the dataset from what it currently is
+                            legend.chart.getDatasetMeta(legendItem.datasetIndex).hidden = legend.chart.isDatasetVisible(legendItem.datasetIndex);
+                            legend.chart.update();
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const labelIndex = (context.datasetIndex * 2) + context.dataIndex;
+                                return context.chart.data.labels[labelIndex] + ': ' + context.formattedValue;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Classifier data',
+                        font: { size: "16px" },
+                        padding: { bottom: 15 }
+                    }
+                }
+            }
+        };
+        new Chart(ctx, config);
     }
 
 </script>

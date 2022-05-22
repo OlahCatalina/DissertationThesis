@@ -1,8 +1,6 @@
 ﻿using Dissertation_Thesis_SitesTextCrawler.Data;
-using Dissertation_Thesis_SitesTextCrawler.Helpers;
 using Dissertation_Thesis_SitesTextCrawler.Models;
 using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
-using System;
 using System.Collections.Generic;
 using System.Data.Entity.Migrations;
 using System.Linq;
@@ -213,144 +211,140 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             _dbContext.DbSites.AddOrUpdate(dbSite);
             await _dbContext.SaveChangesAsync();
 
-            // If updated site URL is not empty and it is different from the old one, recalculate site text and html
-            if (!string.Equals(dbSite.SiteUrl.Trim(' '), site.Url.Trim(' '), StringComparison.InvariantCultureIgnoreCase))
-            {
-                var oldSiteCategories = _dbContext.DbSiteCategories.Where(sc => dbSite.Id == sc.SiteId).ToList();
-                var oldSiteFonts = _dbContext.DbSiteFonts.Where(sf => dbSite.Id == sf.SiteId).ToList();
-                
-                // Remove old font-category relationships
-                foreach (var oldCategory in oldSiteCategories)
-                {
-                    foreach (var oldFont in oldSiteFonts)
-                    {
-                        var dbFontCatRel = _dbContext.DbFontCategories.Where(fc => fc.FontId == oldFont.FontId && fc.CategoryId == oldCategory.CategoryId).ToList();
-                        _dbContext.DbFontCategories.RemoveRange(dbFontCatRel);
-                        await _dbContext.SaveChangesAsync();
-                    }
-                }
+            var oldSiteCategories = _dbContext.DbSiteCategories.Where(sc => dbSite.Id == sc.SiteId).ToList();
+            var oldSiteFonts = _dbContext.DbSiteFonts.Where(sf => dbSite.Id == sf.SiteId).ToList();
 
-                // Remove old site-font relationships
+            // Remove old font-category relationships
+            foreach (var oldCategory in oldSiteCategories)
+            {
                 foreach (var oldFont in oldSiteFonts)
                 {
-                    var dbSiteFontRel = _dbContext.DbSiteFonts.Where(sf=>sf.SiteId == dbSite.Id && sf.FontId == oldFont.FontId).ToList();
-                    _dbContext.DbSiteFonts.RemoveRange(dbSiteFontRel);
+                    var dbFontCatRel = _dbContext.DbFontCategories.Where(fc => fc.FontId == oldFont.FontId && fc.CategoryId == oldCategory.CategoryId).ToList();
+                    _dbContext.DbFontCategories.RemoveRange(dbFontCatRel);
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+
+            // Remove old site-font relationships
+            foreach (var oldFont in oldSiteFonts)
+            {
+                var dbSiteFontRel = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == dbSite.Id && sf.FontId == oldFont.FontId).ToList();
+                _dbContext.DbSiteFonts.RemoveRange(dbSiteFontRel);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Remove old site-category relationships
+            foreach (var oldCategory in oldSiteCategories)
+            {
+                var dbSiteCatRel = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id && sc.CategoryId == oldCategory.CategoryId).ToList();
+                _dbContext.DbSiteCategories.RemoveRange(dbSiteCatRel);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            // Recalculate text & html
+            dbSite.SiteUrl = site.Url.Trim(' ');
+            var siteText = await SiteCrawler.GetSiteText(dbSite.SiteUrl);
+            var siteHtml = await SiteCrawler.GetSiteHtml(dbSite.SiteUrl);
+            dbSite.SiteText = siteText;
+            dbSite.SiteHtml = siteHtml;
+
+            if (!string.IsNullOrEmpty(dbSite.SiteText))
+            {
+                dbSite.SiteText = dbSite.SiteText.Trim(' ');
+            }
+
+            if (!string.IsNullOrEmpty(dbSite.SiteHtml))
+            {
+                dbSite.SiteHtml = dbSite.SiteHtml.Trim(' ');
+            }
+
+            // Find new fonts in site HTML
+            var siteNewFonts = SiteCrawler.GetSiteFonts(siteHtml);
+
+            foreach (var font in siteNewFonts)
+            {
+                if (string.IsNullOrEmpty(font)) continue;
+
+                var dbFont = new DbFont { FontName = font.Trim(' ') };
+                var foundDbFont = _dbContext.DbFonts.FirstOrDefault(f => f.FontName == dbFont.FontName);
+
+                // If not in DB already, add font
+                if (foundDbFont == null)
+                {
+                    _dbContext.DbFonts.Add(dbFont);
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    dbFont = foundDbFont;
+                }
+
+                // Manage relation between fonts and sites
+                var dbSiteFontRel = new DbSiteFont { FontId = dbFont.Id, SiteId = dbSite.Id };
+                var foundDbSiteFontRel = _dbContext.DbSiteFonts
+                    .FirstOrDefault(sf => sf.SiteId == dbSiteFontRel.SiteId && sf.FontId == dbSiteFontRel.FontId);
+
+                // If not in DB already, add site-font relationship
+                if (foundDbSiteFontRel == null)
+                {
+                    _dbContext.DbSiteFonts.Add(dbSiteFontRel);
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+
+            // Find new categories based on site text
+            var siteNewCategories = site.Categories;
+            foreach (var category in siteNewCategories)
+            {
+                if (string.IsNullOrEmpty(category))
+                    continue;
+
+                var dbCategory = new DbCategory { CategoryName = category.Trim(' ') };
+                var foundDbCategory = _dbContext.DbCategories.FirstOrDefault(c => c.CategoryName == dbCategory.CategoryName);
+
+                // If not in DB already, add new category
+                if (foundDbCategory == null)
+                {
+                    _dbContext.DbCategories.Add(dbCategory);
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    dbCategory = foundDbCategory;
+                }
+
+                // Manage relationship between categories and sites
+                var dbSiteCatRel = new DbSiteCategory { SiteId = dbSite.Id, CategoryId = dbCategory.Id };
+                var foundDbSiteCatRel = _dbContext.DbSiteCategories.FirstOrDefault(sc => sc.SiteId == dbSiteCatRel.SiteId && sc.CategoryId == dbSiteCatRel.CategoryId);
+
+                // If not in DB already, add new site-category relationship
+                if (foundDbSiteCatRel == null)
+                {
+                    _dbContext.DbSiteCategories.Add(dbSiteCatRel);
                     await _dbContext.SaveChangesAsync();
                 }
 
-                // Remove old site-category relationships
-                foreach (var oldCategory in oldSiteCategories)
+            }
+
+            // Manage relationship between fonts and categories
+            var dbCategories = _dbContext.DbCategories.Where(c => siteNewCategories.Contains(c.CategoryName)).ToList();
+            var dbFonts = _dbContext.DbFonts.Where(f => siteNewFonts.Contains(f.FontName)).ToList();
+
+            foreach (var category in dbCategories)
+            {
+                foreach (var font in dbFonts)
                 {
-                    var dbSiteCatRel = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id && sc.CategoryId == oldCategory.CategoryId).ToList();
-                    _dbContext.DbSiteCategories.RemoveRange(dbSiteCatRel);
-                    await _dbContext.SaveChangesAsync();
-                }
+                    var dbFontCatRel = new DbFontCategory() { CategoryId = category.Id, FontId = font.Id };
+                    var foundDbFontCatRel = _dbContext.DbFontCategories.FirstOrDefault(fc => fc.FontId == dbFontCatRel.FontId && fc.CategoryId == dbFontCatRel.CategoryId);
 
-                // Recalculate text & html
-                dbSite.SiteUrl = site.Url.Trim(' ');
-                var siteText = await SiteCrawler.GetSiteText(dbSite.SiteUrl);
-                var siteHtml = await SiteCrawler.GetSiteHtml(dbSite.SiteUrl);
-                dbSite.SiteText = siteText;
-                dbSite.SiteHtml = siteHtml;
 
-                if (!string.IsNullOrEmpty(dbSite.SiteText))
-                {
-                    dbSite.SiteText = dbSite.SiteText.Trim(' ');
-                }
-
-                if (!string.IsNullOrEmpty(dbSite.SiteHtml))
-                {
-                    dbSite.SiteHtml = dbSite.SiteHtml.Trim(' ');
-                }
-
-                // Find new fonts in site HTML
-                var siteNewFonts = SiteCrawler.GetSiteFonts(siteHtml);
-                
-                foreach (var font in siteNewFonts)
-                {
-                    if (string.IsNullOrEmpty(font)) continue;
-
-                    var dbFont = new DbFont { FontName = font.Trim(' ')};
-                    var foundDbFont = _dbContext.DbFonts.FirstOrDefault(f => f.FontName == dbFont.FontName);
-
-                    // If not in DB already, add font
-                    if (foundDbFont == null)
+                    // If not in DB already, add new font-category relationship
+                    if (foundDbFontCatRel == null)
                     {
-                        _dbContext.DbFonts.Add(dbFont);
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        dbFont = foundDbFont;
-                    }
-                    
-                    // Manage relation between fonts and sites
-                    var dbSiteFontRel = new DbSiteFont { FontId = dbFont.Id, SiteId = dbSite.Id };
-                    var foundDbSiteFontRel = _dbContext.DbSiteFonts
-                        .FirstOrDefault(sf => sf.SiteId == dbSiteFontRel.SiteId && sf.FontId == dbSiteFontRel.FontId);
-
-                    // If not in DB already, add site-font relationship
-                    if (foundDbSiteFontRel == null)
-                    {
-                        _dbContext.DbSiteFonts.Add(dbSiteFontRel);
-                        await _dbContext.SaveChangesAsync();
-                    }
-                }
-
-                // Find new categories based on site text
-                var siteNewCategories = site.Categories;
-                foreach (var category in siteNewCategories)
-                {
-                    if (string.IsNullOrEmpty(category)) 
-                        continue;
-
-                    var dbCategory = new DbCategory { CategoryName = category.Trim(' ') };
-                    var foundDbCategory = _dbContext.DbCategories.FirstOrDefault(c=>c.CategoryName == dbCategory.CategoryName);
-
-                    // If not in DB already, add new category
-                    if (foundDbCategory == null)
-                    {
-                        _dbContext.DbCategories.Add(dbCategory);
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        dbCategory = foundDbCategory;
-                    }
-
-                    // Manage relationship between categories and sites
-                    var dbSiteCatRel = new DbSiteCategory {  SiteId = dbSite.Id, CategoryId = dbCategory.Id };
-                    var foundDbSiteCatRel = _dbContext.DbSiteCategories.FirstOrDefault(sc=>sc.SiteId==dbSiteCatRel.SiteId && sc.CategoryId == dbSiteCatRel.CategoryId);
-
-                    // If not in DB already, add new site-category relationship
-                    if (foundDbSiteCatRel == null)
-                    {
-                        _dbContext.DbSiteCategories.Add(dbSiteCatRel);
+                        _dbContext.DbFontCategories.Add(dbFontCatRel);
                         await _dbContext.SaveChangesAsync();
                     }
 
-                }
-
-                // Manage relationship between fonts and categories
-                var dbCategories = _dbContext.DbCategories.Where(c => siteNewCategories.Contains(c.CategoryName)).ToList();
-                var dbFonts = _dbContext.DbFonts.Where(f => siteNewFonts.Contains(f.FontName)).ToList();
-
-                foreach (var category in dbCategories)
-                {
-                    foreach (var font in dbFonts)
-                    {
-                        var dbFontCatRel = new DbFontCategory() {CategoryId = category.Id, FontId = font.Id};
-                        var foundDbFontCatRel = _dbContext.DbFontCategories.FirstOrDefault(fc=>fc.FontId==dbFontCatRel.FontId && fc.CategoryId == dbFontCatRel.CategoryId);
-
-
-                        // If not in DB already, add new font-category relationship
-                        if (foundDbFontCatRel == null)
-                        {
-                            _dbContext.DbFontCategories.Add(dbFontCatRel);
-                            await _dbContext.SaveChangesAsync();
-                        }
-
-                    }
                 }
             }
 

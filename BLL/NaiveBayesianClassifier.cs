@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
 
 namespace Dissertation_Thesis_SitesTextCrawler.BLL
 {
@@ -87,13 +87,6 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             return result;
         }
 
-        private static double Calc(double classNumberOfDocs, double allDocsCount, IEnumerable<string> testTextWords, double classWordsCount, ClassInfo @class, double uniqueWordsCount)
-        {
-            var sum = testTextWords.Sum(x => Math.Log((@class.NumberOfOccurrencesInTrainDocs(x) + 1) / (uniqueWordsCount + classWordsCount)));
-            var result = Math.Log(classNumberOfDocs / allDocsCount) + sum;
-
-            return result;
-        }
     }
     
     public static class Helpers
