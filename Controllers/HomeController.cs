@@ -11,6 +11,7 @@ using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
 
 namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 {
+    [AllowCrossSite]
     public class HomeController : Controller
     {
         private Classifier _classifier;
