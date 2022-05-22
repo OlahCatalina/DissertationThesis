@@ -161,7 +161,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var dbContext = new WebAppContext();
                 var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id);
                 var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId);
-                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).ToList();
+                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName).ToList();
 
                 return Json(new { msg = "Ok", fonts = dbFonts });
             }
@@ -169,7 +169,6 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             {
                 return Json(new { msg = e.Message });
             }
-
 
         }
 
