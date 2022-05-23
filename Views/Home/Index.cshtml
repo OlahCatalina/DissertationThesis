@@ -103,7 +103,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row mb-3">
         <div class="col m-3">
             <canvas id="sitesCategoriesFonts" style="max-height: 400px;"></canvas>
         </div>
@@ -113,10 +113,12 @@
     </div>
     <br/>
     <div class="row">
-        <div class="col m-3">
+        <div class="col m-3 mt-5">
             <canvas id="categoriesFrequency" style="max-height: 400px;"></canvas>
         </div>
-        <div class="col m-3">
+    </div>
+    <div class="row">
+        <div class="col m-3 mt-5">
             <canvas id="fontsFrequency" style="max-height: 400px;"></canvas>
         </div>
     </div>
@@ -213,7 +215,6 @@
             "drawCallback": function (settings) {
                 $("#editSiteButton").prop("disabled", true);
                 $("#removeSiteButton").prop("disabled", true);
-                getStatistics();
             },
             select: {
                 style: 'single'
@@ -276,6 +277,7 @@
                                     $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
+                                    getStatistics();
                                 }
 
                                 $(triggerButton).prop("disabled", false);
@@ -365,6 +367,7 @@
                                     $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
+                                    getStatistics();
                                 }
 
                                 $(triggerButton).prop("disabled", false);
@@ -457,6 +460,7 @@
                                     $.alert(srvRsp.msg);
                                 } else {
                                     sitesTable.ajax.reload();
+                                    getStatistics();
                                 }
 
                                 $(triggerButton).prop("disabled", false);

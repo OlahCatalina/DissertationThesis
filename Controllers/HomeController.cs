@@ -1,13 +1,12 @@
-﻿using System;
-using Dissertation_Thesis_SitesTextCrawler.BLL;
+﻿using Dissertation_Thesis_SitesTextCrawler.BLL;
 using Dissertation_Thesis_SitesTextCrawler.Data;
 using Dissertation_Thesis_SitesTextCrawler.Models;
 using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
 
 namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 {
@@ -15,11 +14,10 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
     public class HomeController : Controller
     {
         private Classifier _classifier;
-
+        
         [HttpGet]
         public ActionResult Index()
         {
-            _classifier = Train();
             return View();
         }
 
@@ -42,6 +40,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var sitesManager = new SitesManager(dbContext);
 
                 await sitesManager.UpdateSiteInDb(site);
+
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
                 
                 return Json(new { msg = "Site successfully updated." });
@@ -126,7 +125,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 
                 if (categoryProbabilityDictionary.Count > 0)
                 {
-                    var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).Take(3).ToList();
+                    var finalGuess = categoryProbabilityDictionary.OrderByDescending(d => d.Value).Take(3);
 
                     return Json(new {msg = "Ok", predictions = finalGuess});
                 }
@@ -138,8 +137,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             {
                 return Json(new { msg = e.Message });
             }
-
-          
+            
         }
 
         [HttpPost]
@@ -161,7 +159,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var dbContext = new WebAppContext();
                 var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id);
                 var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId);
-                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName).ToList();
+                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName);
 
                 return Json(new { msg = "Ok", fonts = dbFonts });
             }
@@ -171,8 +169,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             }
 
         }
-
-
+        
         [HttpPost]
         public ActionResult GetStatistics()
         {
