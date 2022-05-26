@@ -11,10 +11,16 @@ using System.Web.Mvc;
 namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 {
     [AllowCrossSite]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        private Classifier _classifier;
-        
+        private static SitesManager _sitesManager;
+        private static Classifier _classifier;
+
+        public HomeController()
+        {
+            _sitesManager = new SitesManager(WebApiContext);
+        }
+
         [HttpGet]
         public ActionResult Index()
         {
@@ -24,9 +30,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         [HttpPost]
         public ActionResult GetSites()
         {
-            var dbContext = new WebAppContext();
-            var sitesManager = new SitesManager(dbContext);
-            var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
+            var listOfSites = _sitesManager.GetAllSitesWithTheirCategoriesFromDb();
 
             return Json(new {data = listOfSites});
         }
@@ -36,10 +40,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         {
             try
             {
-                var dbContext = new WebAppContext();
-                var sitesManager = new SitesManager(dbContext);
-
-                await sitesManager.UpdateSiteInDb(site);
+               await _sitesManager.UpdateSiteInDb(site);
 
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
                 
@@ -56,10 +57,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         {
             try
             {
-                var dbContext = new WebAppContext();
-                var sitesManager = new SitesManager(dbContext);
-
-                await sitesManager.AddSiteToDbAsync(site);
+                await _sitesManager.AddSiteToDbAsync(site);
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
 
                 return Json(new { msg = "Site successfully added." });
@@ -75,10 +73,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
         {
             try
             {
-                var dbContext = new WebAppContext();
-                var sitesManager = new SitesManager(dbContext);
+                _sitesManager.RemoveSiteFromDb(siteId);
 
-                sitesManager.RemoveSiteFromDb(siteId);
                 await Task.Run(() => { _classifier = Train(); }).ConfigureAwait(false);
                 
                 return Json(new { msg = "Site successfully deleted." });
@@ -105,10 +101,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 
             try
             {
-                var dbContext = new WebAppContext();
-                var sitesManager = new SitesManager(dbContext);
-
-                var categories = sitesManager.GetAllCategoriesNames();
+                var categories = _sitesManager.GetAllCategoriesNames();
                 var categoryProbabilityDictionary = new Dictionary<string, double>();
 
                 var siteText = await WebSiteScraper.GetSiteText(siteUrl.Trim(' '));
@@ -156,10 +149,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 
             try
             {
-                var dbContext = new WebAppContext();
-                var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id).ToList();
-                var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId).ToList();
-                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName).ToList();
+                var dbCategoriesIds = WebApiContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id).ToList();
+                var dbCatFontRelIds = WebApiContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId).ToList();
+                var dbFonts = WebApiContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName).ToList();
 
                 return Json(new { msg = "Ok", fonts = dbFonts });
             }
@@ -178,22 +170,21 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 _classifier = Train();
             }
 
-            var dbContext = new WebAppContext();
 
-            var fonts = dbContext.DbFonts.ToList();
-            var categories = dbContext.DbCategories.ToList();
+            var fonts = WebApiContext.DbFonts.ToList();
+            var categories = WebApiContext.DbCategories.ToList();
             var fontFrequencyDict = new List<Tuple<string, int>>();
             var categoryFrequencyDict = new List<Tuple<string, int>>();
             var categoryFontFrequencyDict = new List<Tuple<string, string, int>>();
 
             foreach (var f in fonts)
             {
-                var fontFrequency = dbContext.DbSiteFonts.Count(sf => sf.FontId == f.Id);
+                var fontFrequency = WebApiContext.DbSiteFonts.Count(sf => sf.FontId == f.Id);
                 fontFrequencyDict.Add(new Tuple<string, int>(f.FontName, fontFrequency));
             }
             foreach (var c in categories)
             {
-                var categoryFrequency = dbContext.DbSiteCategories.Count(sc => sc.CategoryId == c.Id);
+                var categoryFrequency = WebApiContext.DbSiteCategories.Count(sc => sc.CategoryId == c.Id);
                 categoryFrequencyDict.Add(new Tuple<string, int>(c.CategoryName, categoryFrequency));
             }
 
@@ -201,13 +192,13 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             {
                 foreach (var c in categories)
                 {
-                    var categoryFontFreq = dbContext.DbFontCategories.Count(fc => fc.CategoryId == c.Id && fc.FontId == f.Id);
+                    var categoryFontFreq = WebApiContext.DbFontCategories.Count(fc => fc.CategoryId == c.Id && fc.FontId == f.Id);
                     categoryFontFrequencyDict.Add(new Tuple<string,string,int>(f.FontName, c.CategoryName, categoryFontFreq));
                 }
             }
 
-            var sitesManager = new SitesManager(dbContext);
-            var sites = dbContext.DbSites.ToList();
+            var sitesManager = new SitesManager(WebApiContext);
+            var sites = WebApiContext.DbSites.ToList();
             var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
             var siteTextAndCategory = new List<Tuple<string, string>>();
             foreach (var s in listOfSites)
@@ -230,10 +221,10 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 ClassifierTotalNumberOfWords = _classifier.GetNumberOfAllWords(),
                 ClassifierTotalNumberOfUniqueWords= _classifier.GetNumberOfUniqueWords(),
                 ClassifierTotalNumberOfSiteCategoryPairs = _classifier.GetNumberOfDocuments(),
-                TotalNumberOfCategories = dbContext.DbCategories.Count(),
-                TotalNumberOfFonts = dbContext.DbFonts.Count(),
-                TotalNumberOfSites = dbContext.DbSites.Count(),
-                Categories = dbContext.DbCategories.Select(c=>c.CategoryName).ToList(),
+                TotalNumberOfCategories = WebApiContext.DbCategories.Count(),
+                TotalNumberOfFonts = WebApiContext.DbFonts.Count(),
+                TotalNumberOfSites = WebApiContext.DbSites.Count(),
+                Categories = WebApiContext.DbCategories.Select(c=>c.CategoryName).ToList(),
                 Fonts = fonts.Select(c => c.FontName).ToList(),
                 FontFrequency = fontFrequencyDict.OrderByDescending(cf => cf.Item2).ToList(),
                 CategoryFrequency = categoryFrequencyDict.OrderByDescending(cf=>cf.Item2).ToList(),
@@ -245,14 +236,12 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
 
         private static Classifier Train()
         {
-            var dbContext = new WebAppContext();
-            var sitesManager = new SitesManager(dbContext);
-            var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
+            var listOfSites = _sitesManager.GetAllSitesWithTheirCategoriesFromDb();
             var classifierTrainData = new List<Document>();
 
             foreach (var site in listOfSites)
             {
-                var dbSite = sitesManager.FindDbSiteByUrl(site.Url);
+                var dbSite = _sitesManager.FindDbSiteByUrl(site.Url);
                 
                 if (dbSite == null) 
                     continue;
