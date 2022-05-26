@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Dissertation_Thesis_SitesTextCrawler.BLL
 {
-    public class SiteCrawler
+    public class WebSiteScraper
     {
         public static async Task<string> GetSiteText(string url)
         {
@@ -65,7 +65,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             }
             catch (Exception e)
             {
-                throw new Exception("Crawler error at reading site text. " + e.Message);
+                throw new Exception("Site scraper could not read the site text.");
             }
         }
 

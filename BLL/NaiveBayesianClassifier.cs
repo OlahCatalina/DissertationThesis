@@ -9,9 +9,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
     public class Classifier
     {
         private readonly List<ClassInfo> _classes;
-        private readonly int _countOfDocs;
-        private readonly int _uniqWordsCount;
-        private readonly int _allWordsCount;
+        private readonly int _numberOfDocuments;
+        private readonly int _numberOfUniqueWords;
+        private readonly int _numberOfTotalWords;
 
         public Classifier(IReadOnlyCollection<Document> train)
         {
@@ -19,24 +19,24 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
                 .GroupBy(x => x.Class)
                 .Select(g => new ClassInfo(g.Key, g.Select(x => x.Text).ToList()))
                 .ToList();
-            _countOfDocs = train.Count;
-            _uniqWordsCount = train.SelectMany(x => x.Text.Split(' ')).GroupBy(x => x).Count();
-            _allWordsCount = train.SelectMany(x => x.Text.Split(' ')).Count();
+            _numberOfDocuments = train.Count;
+            _numberOfUniqueWords = train.SelectMany(x => x.Text.Split(' ')).GroupBy(x => x).Count();
+            _numberOfTotalWords = train.SelectMany(x => x.Text.Split(' ')).Count();
         }
 
         public int GetNumberOfDocuments()
         {
-            return _countOfDocs;
+            return _numberOfDocuments;
         }
 
         public int GetNumberOfUniqueWords()
         {
-            return _uniqWordsCount;
+            return _numberOfUniqueWords;
         }
 
         public int GetNumberOfAllWords()
         {
-            return _allWordsCount;
+            return _numberOfTotalWords;
         }
 
         public int GetNumberOfClasses()
@@ -64,7 +64,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             var classResults = _classes
                 .Select(x => new
                 {
-                    Result = CalculateResult(x.NumberOfDocs, _countOfDocs, words, x.WordsCount, x, _uniqWordsCount),
+                    Result = CalculateResult(x.NumberOfDocs, _numberOfDocuments, words, x.WordsCount, x, _numberOfUniqueWords),
                     ClassName = x.Name
                 })
                 .ToList();

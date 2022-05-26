@@ -59,6 +59,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Routing" />
@@ -125,7 +126,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="BLL\SiteCrawler.cs" />
+    <Compile Include="BLL\WebSiteScraper.cs" />
     <Compile Include="BLL\NaiveBayesianClassifier.cs" />
     <Compile Include="Models\ClassifierModels\ClassInfo.cs" />
     <Compile Include="Models\ClassifierModels\Document.cs" />

@@ -111,9 +111,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var categories = sitesManager.GetAllCategoriesNames();
                 var categoryProbabilityDictionary = new Dictionary<string, double>();
 
-                var siteText = await SiteCrawler.GetSiteText(siteUrl.Trim(' '));
+                var siteText = await WebSiteScraper.GetSiteText(siteUrl.Trim(' '));
 
-                // Calculate probability for each category
+                // Calculate probability for each category (max 15)
                 foreach (var category in categories)
                 {
                     var probability = _classifier.IsInClassProbability(category, siteText);
@@ -157,9 +157,9 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             try
             {
                 var dbContext = new WebAppContext();
-                var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id);
-                var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId);
-                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName);
+                var dbCategoriesIds = dbContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id).ToList();
+                var dbCatFontRelIds = dbContext.DbFontCategories.Where(fc => dbCategoriesIds.Contains(fc.CategoryId)).Select(fc => fc.FontId).ToList();
+                var dbFonts = dbContext.DbFonts.Where(f => dbCatFontRelIds.Contains(f.Id)).Select(f=>f.FontName).ToList();
 
                 return Json(new { msg = "Ok", fonts = dbFonts });
             }

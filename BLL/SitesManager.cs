@@ -3,6 +3,7 @@ using Dissertation_Thesis_SitesTextCrawler.Models;
 using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
 
         public List<DbSite> GetAllSitesFromDb()
         {
-            return _dbContext.DbSites.ToList();
+            return _dbContext.DbSites.AsNoTracking().ToList();
         }
 
         public List<SiteDto> GetAllSitesWithTheirCategoriesFromDb()
@@ -30,8 +31,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
 
             foreach (var dbSite in allSitesFromDb)
             {
-                var categoriesIds = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id).Select(sc=> sc.CategoryId);
-                var dbCategories = _dbContext.DbCategories.Where(c => categoriesIds.Contains(c.Id)).Select(c=> c.CategoryName).ToList();
+                var categoriesIds = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id).Select(sc=> sc.CategoryId).ToList();
+                var dbCategories = _dbContext.DbCategories.Where(c => categoriesIds.Contains(c.Id)).Select(c=> c.CategoryName).AsNoTracking().ToList();
                 var siteDto = new SiteDto
                 {
                     Id = dbSite.Id,
@@ -58,8 +59,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             dbSite.SiteName = dbSite.SiteName.Trim(' ');
             dbSite.SiteUrl = dbSite.SiteUrl.Trim(' ');
 
-            var siteText = await SiteCrawler.GetSiteText(dbSite.SiteUrl);
-            var siteHtml = await SiteCrawler.GetSiteHtml(dbSite.SiteUrl);
+            var siteText = await WebSiteScraper.GetSiteText(dbSite.SiteUrl);
+            var siteHtml = await WebSiteScraper.GetSiteHtml(dbSite.SiteUrl);
 
             dbSite.SiteText = siteText;
             dbSite.SiteHtml = siteHtml;
@@ -108,10 +109,11 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
 
             var thisSiteDbCategoriesIds = _dbContext.DbSiteCategories
                 .Where(sc => sc.SiteId == dbSite.Id)
-                .Select(sc => sc.CategoryId);
+                .Select(sc => sc.CategoryId)
+                .ToList();
 
             // Add/update fonts and site-fonts relationships
-            var siteFonts = SiteCrawler.GetSiteFonts(siteHtml);
+            var siteFonts = WebSiteScraper.GetSiteFonts(siteHtml);
             foreach (var font in siteFonts)
             {
                 if (string.IsNullOrEmpty(font))
@@ -171,12 +173,12 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             }
 
             // Find all attached categories to this site => remove relationship between current site and those categories
-            var dbSiteCategories = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == site.Id);
+            var dbSiteCategories = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == site.Id).ToList();
             _dbContext.DbSiteCategories.RemoveRange(dbSiteCategories);
             _dbContext.SaveChanges();
 
             // Find all fonts found in this site => remove relationship between current site and those fonts
-            var dbSiteFonts = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == site.Id);
+            var dbSiteFonts = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == site.Id).ToList();
             _dbContext.DbSiteFonts.RemoveRange(dbSiteFonts);
             _dbContext.SaveChanges();
 
@@ -206,20 +208,20 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             
             // Recalculate text & html
             dbSite.SiteUrl = site.Url.Trim(' ');
-            var siteText = await SiteCrawler.GetSiteText(dbSite.SiteUrl);
-            var siteHtml = await SiteCrawler.GetSiteHtml(dbSite.SiteUrl);
+            var siteText = await WebSiteScraper.GetSiteText(dbSite.SiteUrl);
+            var siteHtml = await WebSiteScraper.GetSiteHtml(dbSite.SiteUrl);
             dbSite.SiteText = siteText;
             dbSite.SiteHtml = siteHtml;
 
-            var oldSiteCategories = _dbContext.DbSiteCategories.Where(sc => dbSite.Id == sc.SiteId);
-            var oldSiteFonts = _dbContext.DbSiteFonts.Where(sf => dbSite.Id == sf.SiteId);
+            var oldSiteCategories = _dbContext.DbSiteCategories.Where(sc => dbSite.Id == sc.SiteId).ToList();
+            var oldSiteFonts = _dbContext.DbSiteFonts.Where(sf => dbSite.Id == sf.SiteId).ToList();
 
             // Remove old font-category relationships
             foreach (var oldCategory in oldSiteCategories)
             {
                 foreach (var oldFont in oldSiteFonts)
                 {
-                    var dbFontCatRel = _dbContext.DbFontCategories.Where(fc => fc.FontId == oldFont.FontId && fc.CategoryId == oldCategory.CategoryId);
+                    var dbFontCatRel = _dbContext.DbFontCategories.Where(fc => fc.FontId == oldFont.FontId && fc.CategoryId == oldCategory.CategoryId).ToList();
                     _dbContext.DbFontCategories.RemoveRange(dbFontCatRel);
                     await _dbContext.SaveChangesAsync();
                 }
@@ -228,7 +230,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             // Remove old site-font relationships
             foreach (var oldFont in oldSiteFonts)
             {
-                var dbSiteFontRel = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == dbSite.Id && sf.FontId == oldFont.FontId);
+                var dbSiteFontRel = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == dbSite.Id && sf.FontId == oldFont.FontId).ToList();
                 _dbContext.DbSiteFonts.RemoveRange(dbSiteFontRel);
                 await _dbContext.SaveChangesAsync();
             }
@@ -236,7 +238,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             // Remove old site-category relationships
             foreach (var oldCategory in oldSiteCategories)
             {
-                var dbSiteCatRel = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id && sc.CategoryId == oldCategory.CategoryId);
+                var dbSiteCatRel = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id && sc.CategoryId == oldCategory.CategoryId).ToList();
                 _dbContext.DbSiteCategories.RemoveRange(dbSiteCatRel);
                 await _dbContext.SaveChangesAsync();
             }
@@ -252,7 +254,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             }
 
             // Find new fonts in site HTML
-            var siteNewFonts = SiteCrawler.GetSiteFonts(siteHtml);
+            var siteNewFonts = WebSiteScraper.GetSiteFonts(siteHtml);
 
             foreach (var font in siteNewFonts)
             {
@@ -320,8 +322,8 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             }
 
             // Manage relationship between fonts and categories
-            var dbCategories = _dbContext.DbCategories.Where(c => siteNewCategories.Contains(c.CategoryName));
-            var dbFonts = _dbContext.DbFonts.Where(f => siteNewFonts.Contains(f.FontName));
+            var dbCategories = _dbContext.DbCategories.Where(c => siteNewCategories.Contains(c.CategoryName)).ToList();
+            var dbFonts = _dbContext.DbFonts.Where(f => siteNewFonts.Contains(f.FontName)).ToList();
 
             foreach (var category in dbCategories)
             {
