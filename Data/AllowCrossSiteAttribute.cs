@@ -1,4 +1,4 @@
-﻿namespace Dissertation_Thesis_SitesTextCrawler.Data
+﻿namespace Dissertation_Thesis_WebsiteScraper.Data
 {
     using System.Web.Mvc;
 

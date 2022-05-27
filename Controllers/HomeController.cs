@@ -1,14 +1,14 @@
-﻿using Dissertation_Thesis_SitesTextCrawler.BLL;
-using Dissertation_Thesis_SitesTextCrawler.Data;
-using Dissertation_Thesis_SitesTextCrawler.Models;
-using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Dissertation_Thesis_WebsiteScraper.BLL;
+using Dissertation_Thesis_WebsiteScraper.Data;
+using Dissertation_Thesis_WebsiteScraper.Models;
+using Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Controllers
+namespace Dissertation_Thesis_WebsiteScraper.Controllers
 {
     [AllowCrossSite]
     public class HomeController : BaseController
@@ -142,11 +142,6 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 return Json(new { msg = "Categories list is empty."});
             }
 
-            if (_classifier == null)
-            {
-                _classifier = Train();
-            }
-
             try
             {
                 var dbCategoriesIds = WebApiContext.DbCategories.Where(c => categories.Contains(c.CategoryName)).Select(c => c.Id).ToList();
@@ -169,8 +164,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             {
                 _classifier = Train();
             }
-
-
+            
             var fonts = WebApiContext.DbFonts.ToList();
             var categories = WebApiContext.DbCategories.ToList();
             var fontFrequencyDict = new List<Tuple<string, int>>();
@@ -182,6 +176,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
                 var fontFrequency = WebApiContext.DbSiteFonts.Count(sf => sf.FontId == f.Id);
                 fontFrequencyDict.Add(new Tuple<string, int>(f.FontName, fontFrequency));
             }
+
             foreach (var c in categories)
             {
                 var categoryFrequency = WebApiContext.DbSiteCategories.Count(sc => sc.CategoryId == c.Id);
@@ -201,6 +196,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.Controllers
             var sites = WebApiContext.DbSites.ToList();
             var listOfSites = sitesManager.GetAllSitesWithTheirCategoriesFromDb();
             var siteTextAndCategory = new List<Tuple<string, string>>();
+
             foreach (var s in listOfSites)
             {
                 var dbSite = sites.FirstOrDefault(dbS => dbS.SiteUrl == s.Url);

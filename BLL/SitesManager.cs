@@ -1,14 +1,14 @@
-﻿using Dissertation_Thesis_SitesTextCrawler.Data;
-using Dissertation_Thesis_SitesTextCrawler.Models;
-using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading.Tasks;
+using Dissertation_Thesis_WebsiteScraper.Data;
+using Dissertation_Thesis_WebsiteScraper.Models;
+using Dissertation_Thesis_WebsiteScraper.Models.DatabaseModels;
 
-namespace Dissertation_Thesis_SitesTextCrawler.BLL
+namespace Dissertation_Thesis_WebsiteScraper.BLL
 {
     public class SitesManager
     {

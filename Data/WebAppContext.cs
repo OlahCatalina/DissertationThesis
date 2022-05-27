@@ -1,7 +1,7 @@
-﻿using Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels;
-using System.Data.Entity;
+﻿using System.Data.Entity;
+using Dissertation_Thesis_WebsiteScraper.Models.DatabaseModels;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Data
+namespace Dissertation_Thesis_WebsiteScraper.Data
 {
     public class WebAppContext: DbContext
     {

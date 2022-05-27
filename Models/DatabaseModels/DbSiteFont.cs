@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Models.DatabaseModels
+namespace Dissertation_Thesis_WebsiteScraper.Models.DatabaseModels
 {
     [Table("SiteFont")]
 

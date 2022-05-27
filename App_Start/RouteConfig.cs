@@ -1,7 +1,7 @@
 ﻿using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace Dissertation_Thesis_SitesTextCrawler
+namespace Dissertation_Thesis_WebsiteScraper
 {
     public class RouteConfig
     {

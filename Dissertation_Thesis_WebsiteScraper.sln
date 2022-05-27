@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.32413.511
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dissertation_Thesis_SitesTextCrawler", "Dissertation_Thesis_SitesTextCrawler.csproj", "{CE2B017B-0072-4B77-B107-702436F37126}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dissertation_Thesis_WebsiteScraper", "Dissertation_Thesis_WebsiteScraper.csproj", "{CE2B017B-0072-4B77-B107-702436F37126}"
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SitesDatabase", "..\SitesDatabase\SitesDatabase.sqlproj", "{1B9A447E-9803-486F-B383-7BAB675AF51D}"
 EndProject

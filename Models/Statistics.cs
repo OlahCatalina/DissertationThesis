@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Models
+namespace Dissertation_Thesis_WebsiteScraper.Models
 {
     public class Statistics
     {

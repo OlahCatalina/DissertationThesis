@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Dissertation_Thesis_SitesTextCrawler.BLL;
+using Dissertation_Thesis_WebsiteScraper.BLL;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels
+namespace Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels
 {
     public class ClassInfo
     {

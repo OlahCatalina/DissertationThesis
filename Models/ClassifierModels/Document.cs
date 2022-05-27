@@ -1,4 +1,4 @@
-﻿namespace Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels
+﻿namespace Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels
 {
     public class Document
     {

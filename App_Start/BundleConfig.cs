@@ -1,6 +1,6 @@
 ﻿using System.Web.Optimization;
 
-namespace Dissertation_Thesis_SitesTextCrawler
+namespace Dissertation_Thesis_WebsiteScraper
 {
     public class BundleConfig
     {

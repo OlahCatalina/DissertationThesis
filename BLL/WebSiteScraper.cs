@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Dissertation_Thesis_SitesTextCrawler.BLL
+namespace Dissertation_Thesis_WebsiteScraper.BLL
 {
     public class WebSiteScraper
     {
@@ -86,7 +86,7 @@ namespace Dissertation_Thesis_SitesTextCrawler.BLL
             }
             catch (Exception e)
             {
-                throw new Exception("Crawler error at reading site HTML. " + e.Message);
+                throw new Exception("Scraper error at reading site HTML. " + e.Message);
             }
            
         }

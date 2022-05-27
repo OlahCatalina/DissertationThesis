@@ -1,7 +1,7 @@
 ﻿using System.Web.Mvc;
-using Dissertation_Thesis_SitesTextCrawler.Data;
+using Dissertation_Thesis_WebsiteScraper.Data;
 
-namespace Dissertation_Thesis_SitesTextCrawler.Controllers
+namespace Dissertation_Thesis_WebsiteScraper.Controllers
 {
     public abstract class BaseController : Controller
     {

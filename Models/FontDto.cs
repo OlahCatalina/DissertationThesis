@@ -1,4 +1,4 @@
-﻿namespace Dissertation_Thesis_SitesTextCrawler.Models
+﻿namespace Dissertation_Thesis_WebsiteScraper.Models
 {
     public class FontDto
     {

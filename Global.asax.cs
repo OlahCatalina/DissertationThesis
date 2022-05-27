@@ -2,7 +2,7 @@
 using System.Web.Optimization;
 using System.Web.Routing;
 
-namespace Dissertation_Thesis_SitesTextCrawler
+namespace Dissertation_Thesis_WebsiteScraper
 {
     public class MvcApplication : System.Web.HttpApplication
     {

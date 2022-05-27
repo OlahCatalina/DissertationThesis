@@ -1,10 +1,10 @@
-﻿using Dissertation_Thesis_SitesTextCrawler.Models.ClassifierModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels;
 
-namespace Dissertation_Thesis_SitesTextCrawler.BLL
+namespace Dissertation_Thesis_WebsiteScraper.BLL
 {
     public class Classifier
     {
