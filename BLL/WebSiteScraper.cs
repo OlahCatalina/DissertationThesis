@@ -44,22 +44,59 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 var body = htmlDocument.DocumentNode.SelectSingleNode("//body");
                 if (body != null)
                 {
-                    var paragraphs = body.Descendants("p").ToList().Select(p => p.InnerText);
-                    var spans = body.Descendants("span").ToList().Select(p => p.InnerText);
-                    var h1S = body.Descendants("h1").ToList().Select(p => p.InnerText);
-                    var h2S = body.Descendants("h2").ToList().Select(p => p.InnerText);
-                    var h3S = body.Descendants("h3").ToList().Select(p => p.InnerText);
-                    var h4S = body.Descendants("h4").ToList().Select(p => p.InnerText);
-                    var h5S = body.Descendants("h5").ToList().Select(p => p.InnerText);
-                    var hs = h1S + " " + h2S + " " + h3S + " " + h4S + " " + h5S + " ";
-                    totalText += string.Join(" ", paragraphs) + " " + string.Join(" ", spans) + " " + hs;
+                    var paragraphs = body.Descendants("p").Select(p => p.InnerText).ToList();
+                    var spans = body.Descendants("span").Select(p => p.InnerText).ToList();
+                    var h1S = body.Descendants("h1").Select(p => p.InnerText).ToList();
+                    var h2S = body.Descendants("h2").Select(p => p.InnerText).ToList();
+                    var h3S = body.Descendants("h3").Select(p => p.InnerText).ToList();
+                    var h4S = body.Descendants("h4").Select(p => p.InnerText).ToList();
+                    var h5S = body.Descendants("h5").Select(p => p.InnerText).ToList();
+
+                    if (h1S.Count > 0)
+                    {
+                        totalText += string.Join(" ", h1S) + " ";
+                    }
+                    if (h2S.Count > 0)
+                    {
+                        totalText += string.Join(" ", h2S) + " ";
+                    }
+                    if (h3S.Count > 0)
+                    {
+                        totalText += string.Join(" ", h3S) + " ";
+                    }
+                    if (h4S.Count > 0)
+                    {
+                        totalText += string.Join(" ", h4S) + " ";
+                    }
+                    if (h5S.Count > 0)
+                    {
+                        totalText += string.Join(" ", h5S) + " ";
+                    }
+
+                    if (paragraphs.Count > 0)
+                    {
+                        totalText += string.Join(" ", paragraphs) + " ";
+                    }
+
+                    if (spans.Count > 0)
+                    {
+                        totalText += string.Join(" ", spans) + " ";
+                    }
                 }
 
-                totalText = Regex.Replace(totalText, @"\s+", " ");
+                // take only words
                 totalText = Regex.Replace(totalText, @"\n", " ");
                 totalText = Regex.Replace(totalText, @"\t", " ");
                 totalText = Regex.Replace(totalText, @"»", " ");
+                totalText = Regex.Replace(totalText, @"&quot;", " ");
                 totalText = Regex.Replace(totalText, @"&amp;", " ");
+                totalText = Regex.Replace(totalText, @"&lt;", " ");
+                totalText = Regex.Replace(totalText, @"&gt;", " ");
+                totalText = Regex.Replace(totalText, @"&nbsp;", " ");
+                totalText = Regex.Replace(totalText, @"\d+", " ");
+                totalText = Regex.Replace(totalText, @"\W", " ");
+                totalText = Regex.Replace(totalText, @"\s+", " ");
+                totalText = totalText.ToLowerInvariant();
 
                 return totalText;
             }
@@ -88,7 +125,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             {
                 throw new Exception("Scraper error at reading site HTML. " + e.Message);
             }
-           
+
         }
 
         public static List<string> GetSiteFonts(string siteHtml)
@@ -107,7 +144,8 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             listOfFonts = listOfFonts.Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
             listOfFonts = listOfFonts.Select(f => f.Split(':')[1].Trim(' ').Trim('\"').Trim('\'')).ToList();
             listOfFonts = listOfFonts
-                .Where(f => string.Compare(f, "inherit", StringComparison.InvariantCultureIgnoreCase) != 0).ToList();
+                .Where(f => string.Compare(f, "inherit", StringComparison.InvariantCultureIgnoreCase) != 0)
+                .ToList();
             return listOfFonts;
         }
     }

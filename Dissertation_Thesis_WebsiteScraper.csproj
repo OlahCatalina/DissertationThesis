@@ -119,6 +119,8 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="BLL\BayesClassifier.cs" />
+    <Compile Include="BLL\Category.cs" />
     <Compile Include="BLL\SitesManager.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -182,7 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\DissertationThesisSitesTextCrawler - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\DissertationThesisWebsiteScraper - Web Deploy.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SitesDatabase\SitesDatabase.sqlproj">
