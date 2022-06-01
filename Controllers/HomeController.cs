@@ -27,6 +27,7 @@ namespace Dissertation_Thesis_WebsiteScraper.Controllers
         public ActionResult Index()
         {
             //Classify();
+
             return View();
         }
 
