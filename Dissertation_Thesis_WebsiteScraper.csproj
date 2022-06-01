@@ -184,9 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\DissertationThesisSitesTextCrawler - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\DissertationThesisSitesTextCrawler - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\DissertationThesisWebsiteScraper - Web Deploy.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SitesDatabase\SitesDatabase.sqlproj">
