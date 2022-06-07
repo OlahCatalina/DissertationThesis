@@ -27,13 +27,23 @@
         <div class="row">
             <div class="col-12">
 
+                <!-- Add button -->
+                <button id="addSiteButton" onclick="addSite(this)" class="btn btn-primary">
+                    Add
+                    <!-- Icon for plus-->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                </button>
+
                 <!-- Remove button -->
                 <button id="removeSiteButton" onclick="removeSite(this)" class="btn btn-primary" disabled>
                     Remove
                     <!-- Icon for minus -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
                     </svg>
                 </button>
 
@@ -42,18 +52,26 @@
                     Edit
                     <!-- Icon for edit -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                     </svg>
                 </button>
 
-                <!-- Add button -->
-                <button id="addSiteButton" onclick="addSite(this)" class="btn btn-primary">
-                    Add
-                    <!-- Icon for plus-->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                <!-- Get text button -->
+                <button id="getSiteTextButton" onclick="getSiteText(this)" class="btn btn-secondary" disabled>
+                    See text
+                    <!-- Icon for text -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-blockquote-right" viewBox="0 0 16 16">
+                        <path d="M2.5 3a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1h-11zm0 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6zm0 3a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6zm0 3a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1h-11zm10.113-5.373a6.59 6.59 0 0 0-.445-.275l.21-.352c.122.074.272.17.452.287.18.117.35.26.51.428.156.164.289.351.398.562.11.207.164.438.164.692 0 .36-.072.65-.216.873-.145.219-.385.328-.721.328-.215 0-.383-.07-.504-.211a.697.697 0 0 1-.188-.463c0-.23.07-.404.211-.521.137-.121.326-.182.569-.182h.281a1.686 1.686 0 0 0-.123-.498 1.379 1.379 0 0 0-.252-.37 1.94 1.94 0 0 0-.346-.298zm-2.168 0A6.59 6.59 0 0 0 10 6.352L10.21 6c.122.074.272.17.452.287.18.117.35.26.51.428.156.164.289.351.398.562.11.207.164.438.164.692 0 .36-.072.65-.216.873-.145.219-.385.328-.721.328-.215 0-.383-.07-.504-.211a.697.697 0 0 1-.188-.463c0-.23.07-.404.211-.521.137-.121.327-.182.569-.182h.281a1.749 1.749 0 0 0-.117-.492 1.402 1.402 0 0 0-.258-.375 1.94 1.94 0 0 0-.346-.3z"/>
+                    </svg>
+                </button>
+
+                <!-- Get html button -->
+                <button id="getSiteHtmlButton" onclick="getSiteHtml(this)" class="btn btn-secondary" disabled>
+                    See HTML
+                    <!-- Icon for html -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-html" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M14 4.5V11h-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5L14 4.5Zm-9.736 7.35v3.999h-.791v-1.714H1.79v1.714H1V11.85h.791v1.626h1.682V11.85h.79Zm2.251.662v3.337h-.794v-3.337H4.588v-.662h3.064v.662H6.515Zm2.176 3.337v-2.66h.038l.952 2.159h.516l.946-2.16h.038v2.661h.715V11.85h-.8l-1.14 2.596H9.93L8.79 11.85h-.805v3.999h.706Zm4.71-.674h1.696v.674H12.61V11.85h.79v3.325Z"/>
                     </svg>
                 </button>
 
@@ -71,17 +89,18 @@
 
             </div>
         </div>
+      
         <!-- Table -->
         <div class="row">
             <div class="col-12 py-3">
                 <table id="sitesTable" class="table">
                     <thead class="bg-dark text-light">
-                    <tr>
-                        <th scope="col">Id</th>
-                        <th scope="col">Site</th>
-                        <th scope="col">URL</th>
-                        <th scope="col">Categories</th>
-                    </tr>
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Site</th>
+                            <th scope="col">URL</th>
+                            <th scope="col">Categories</th>
+                        </tr>
                     </thead>
                 </table>
             </div>
@@ -120,6 +139,31 @@
     <div class="row">
         <div class="col m-3 mt-5">
             <canvas id="fontsFrequency" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col m-3 mt-5">
+            <h5 class="text-primary"> Categories and fonts used in them </h5>
+
+            <table id="categoryFontsTable" class="table display compact">
+                <thead class="bg-dark text-light">
+                    <tr>
+                        <th scope="col">Category</th>
+                        <th scope="col">Fonts</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="col m-3 mt-5">
+            <h5 class="text-primary"> Fonts and categories in which they appear </h5>
+            <table id="fontCategoriesTable" class="table display compact">
+                <thead class="bg-dark text-light">
+                    <tr>
+                        <th scope="col">Font</th>
+                        <th scope="col">Categories</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
 </div>
@@ -215,6 +259,8 @@
             "drawCallback": function (settings) {
                 $("#editSiteButton").prop("disabled", true);
                 $("#removeSiteButton").prop("disabled", true);
+                $("#getSiteTextButton").prop("disabled", true);
+                $("#getSiteHtmlButton").prop("disabled", true);
             },
             select: {
                 style: 'single'
@@ -227,12 +273,16 @@
                 if (type === 'row') {
                     $("#editSiteButton").prop("disabled", false);
                     $("#removeSiteButton").prop("disabled", false);
+                    $("#getSiteTextButton").prop("disabled", false);
+                    $("#getSiteHtmlButton").prop("disabled", false);
                 }
             })
             .on('deselect', function (e, dt, type, indexes) {
                 if (type === 'row') {
                     $("#editSiteButton").prop("disabled", true);
                     $("#removeSiteButton").prop("disabled", true);
+                    $("#getSiteTextButton").prop("disabled", true);
+                    $("#getSiteHtmlButton").prop("disabled", true);
                 }
             });
     }
@@ -363,7 +413,7 @@
                                 data: { site: newData },
                                 cache: false
                             })
-                            .done(function (srvRsp) {
+                            .done(function(srvRsp) {
                                 if (srvRsp.msg !== "Site successfully updated.") {
                                     $.alert(srvRsp.msg);
                                 } else {
@@ -374,7 +424,7 @@
 
                                 $(triggerButton).prop("disabled", false);
                             })
-                            .fail(function (jqXhr, textStatus) {
+                            .fail(function(jqXhr, textStatus) {
                                 $.alert(`Error ${jqXhr.status}. Site not updated.`);
                                 $(triggerButton).prop("disabled", false);
                             });
@@ -438,15 +488,21 @@
                         // 4. Save new site and then enable button
                         const sitesTable = $('#sitesTable').DataTable();
                         const site = {
-                            "Id":0,
+                            "Id": 0,
                             "Name": siteName,
                             "Url": siteUrl,
                             "Categories": categories
                         };
 
-                        if (site.Name === "" || site.Name == null || site.Name == undefined ||
-                            site.Url === "" || site.Url == null || site.Url == undefined ||
-                            site.Categories == null || site.Categories == undefined || site.Categories.length === 0) {
+                        if (site.Name === "" ||
+                            site.Name == null ||
+                            site.Name == undefined ||
+                            site.Url === "" ||
+                            site.Url == null ||
+                            site.Url == undefined ||
+                            site.Categories == null ||
+                            site.Categories == undefined ||
+                            site.Categories.length === 0) {
                             $.alert("Data incomplete. Site cannot be added.");
                             return false;
                         }
@@ -457,7 +513,7 @@
                                 data: { site: site },
                                 cache: false
                             })
-                            .done(function (srvRsp) {
+                            .done(function(srvRsp) {
                                 if (srvRsp.msg !== "Site successfully added.") {
                                     $.alert(srvRsp.msg);
                                 } else {
@@ -468,7 +524,7 @@
 
                                 $(triggerButton).prop("disabled", false);
                             })
-                            .fail(function (jqXhr, textStatus) {
+                            .fail(function(jqXhr, textStatus) {
                                 $.alert(`Error ${jqXhr.status}. Site not added.`);
                                 $(triggerButton).prop("disabled", false);
                             });
@@ -487,6 +543,108 @@
         });
 
         $(triggerButton).prop("disabled", false);
+
+    }
+
+    function getSiteText(triggerButton) {
+        // 1. Disable button
+        $(triggerButton).prop("disabled", true);
+
+        // 2. Get selection
+        const sitesTable = $('#sitesTable').DataTable();
+        const selectedRow = sitesTable.rows({ selected: true }).data()[0];
+        const siteUrl = selectedRow.Url;
+
+        // 3. Send data and get text
+        $.ajax({
+                url: '@Url.Action("GetSiteText", "Home")',
+                method: 'POST',
+                data: { siteUrl: siteUrl },
+                cache: false
+            })
+            .done(function (srvRsp) {
+                if (srvRsp.msg !== "Site text successfully retrieved.") {
+                    $.alert(srvRsp.msg);
+                }
+                else {
+
+                    $.confirm({
+                        title: `Retrieved text:`,
+                        content: `<div style="overflow-y:scroll;">${srvRsp.text}</div>`,
+                        columnClass: "col-6 col-offset-3",
+                        draggable: false,
+                        buttons: {
+                            cancel: {
+                                text: "Close",
+                                btnClass: "btn btn-secondary",
+                                action: function() {
+                                    // 4. 1. Close and enable button
+                                    $(triggerButton).prop("disabled", false);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                $(triggerButton).prop("disabled", false);
+            })
+            .fail(function (jqXhr, textStatus) {
+                $.alert(`Error ${jqXhr.status}. Site text could not be retrieved.`);
+                $(triggerButton).prop("disabled", false);
+            });
+
+    }
+
+    function getSiteHtml(triggerButton) {
+        // 1. Disable button
+        $(triggerButton).prop("disabled", true);
+
+        // 2. Get selection
+        const sitesTable = $('#sitesTable').DataTable();
+        const selectedRow = sitesTable.rows({ selected: true }).data()[0];
+        const siteUrl = selectedRow.Url;
+
+        // 3. Send data and get text
+        $.ajax({
+                url: '@Url.Action("GetSiteHtml", "Home")',
+                method: 'POST',
+                data: { siteUrl: siteUrl },
+                cache: false
+            })
+            .done(function (srvRsp) {
+                if (srvRsp.msg !== "Site HTML successfully retrieved.") {
+                    $.alert(srvRsp.msg);
+                }
+                else {
+                    const text = srvRsp.html;
+                    const encodedStr = text.replace(/[\u00A0-\u9999<>\&]/g, function(i) {
+                        return `&#${i.charCodeAt(0)};`;
+                    });
+
+                    $.confirm({
+                        title: `Retrieved HTML:`,
+                        content: `<p style="overflow-y:scroll;">${encodedStr}</p>`,
+                        columnClass: "col-6 col-offset-3",
+                        draggable: false,
+                        buttons: {
+                            cancel: {
+                                text: "Close",
+                                btnClass: "btn btn-secondary",
+                                action: function() {
+                                    // 4. 1. Close and enable button
+                                    $(triggerButton).prop("disabled", false);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                $(triggerButton).prop("disabled", false);
+            })
+            .fail(function (jqXhr, textStatus) {
+                $.alert(`Error ${jqXhr.status}. Site HTML could not be retrieved.`);
+                $(triggerButton).prop("disabled", false);
+            });
 
     }
 
@@ -598,6 +756,8 @@
                 _showCategoriesFrequency(srvRsp);
                 _showFontsFrequency(srvRsp);
                 _showClassifierRelatedNumbers(srvRsp);
+                _showFontCategoriesList(srvRsp);
+                _showCategoryFontsList(srvRsp);
             })
             .fail(function(jqXhr, textStatus) {
                // $.alert(`Error ${jqXhr.status}. Could not get statistics.`);
@@ -946,6 +1106,77 @@
             }
         };
         new Chart(ctx, config);
+    }
+
+    function _showFontCategoriesList(srvRsp) {
+
+        const data = srvRsp.data.FontCategoryList;
+        var adaptedData = new Array();
+        for (let key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                const value = data[key];
+                const d = {
+                    "Font": key,
+                    "Categories": value
+                };
+                adaptedData.push(d);
+            }
+        }
+        const fontCategoriesTbl = $("#fontCategoriesTable").DataTable({
+            "order": [[0, "asc"]],
+            "data": adaptedData,
+            "columns" : [
+                { "data": "Font" },
+                {
+                    "data": "Categories",
+                    "render": function (_, __, row) {
+                        var html = "<ul>";
+                        
+                        for (let c in row.Categories) {
+                            html += `<li>${row.Categories[c]}</li>`;
+                        }
+                        html += "</ul>";
+                        return html;
+                    }
+                }
+            ]
+        });
+
+    }
+
+    function _showCategoryFontsList(srvRsp) {
+       const data = srvRsp.data.CategoryFontsList;
+        var adaptedData = new Array();
+        for (let key in data) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
+                const value = data[key];
+                const d = {
+                    "Category": key,
+                    "Fonts": value
+                };
+                adaptedData.push(d);
+            }
+        }
+        const categoryFontsTbl = $("#categoryFontsTable").DataTable({
+            "order": [[0, "asc"]],
+            "data": adaptedData,
+            "columns": [
+                { "data": "Category" },
+                {
+                    "data": "Fonts",
+                    "render": function (_, __, row) {
+                        var html = "<ul>";
+
+                        for (let c in row.Fonts) {
+                            html += `<li>${row.Fonts[c]}</li>`;
+                        }
+                        html += "</ul>";
+                        return html;
+                    }
+                }
+            ]
+        });
+
     }
 
 </script>

@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Dissertation_Thesis_WebsiteScraper.Data;
+using Dissertation_Thesis_WebsiteScraper.Models;
+using Dissertation_Thesis_WebsiteScraper.Models.DatabaseModels;
+using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading.Tasks;
-using Dissertation_Thesis_WebsiteScraper.Data;
-using Dissertation_Thesis_WebsiteScraper.Models;
-using Dissertation_Thesis_WebsiteScraper.Models.DatabaseModels;
 
 namespace Dissertation_Thesis_WebsiteScraper.BLL
 {
@@ -21,7 +20,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
 
         public List<DbSite> GetAllSitesFromDb()
         {
-            return _dbContext.DbSites.AsNoTracking().ToList();
+            return _dbContext.DbSites.ToList();
         }
 
         public List<SiteDto> GetAllSitesWithTheirCategoriesFromDb()
@@ -32,7 +31,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             foreach (var dbSite in allSitesFromDb)
             {
                 var categoriesIds = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id).Select(sc=> sc.CategoryId).ToList();
-                var dbCategories = _dbContext.DbCategories.Where(c => categoriesIds.Contains(c.Id)).Select(c=> c.CategoryName).AsNoTracking().ToList();
+                var dbCategories = _dbContext.DbCategories.Where(c => categoriesIds.Contains(c.Id)).Select(c=> c.CategoryName).ToList();
                 var siteDto = new SiteDto
                 {
                     Id = dbSite.Id,
@@ -47,6 +46,18 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             return sites;
         }
 
+        public string GetSiteText(string siteUrl)
+        {
+            var dbSite = _dbContext.DbSites.FirstOrDefault(s => s.SiteUrl == siteUrl);
+            return dbSite?.SiteText;
+        }
+
+        public string GetSiteHtml(string siteUrl)
+        {
+            var dbSite = _dbContext.DbSites.FirstOrDefault(s => s.SiteUrl == siteUrl);
+            return dbSite?.SiteHtml;
+        }
+
         public async Task AddSiteToDbAsync(SiteDto site)
         {
             var dbSite = new DbSite { SiteName = site.Name, SiteUrl = site.Url };
@@ -56,6 +67,11 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 throw new Exception("Incomplete site data, insertion failed.");
             }
 
+            var found = _dbContext.DbSites.FirstOrDefault(s => s.SiteName == site.Name || s.SiteUrl == site.Url);
+            if (found != null)
+            {
+                throw new Exception("Site with same name or URL already added, insertion failed.");
+            }
             dbSite.SiteName = dbSite.SiteName.Trim(' ');
             dbSite.SiteUrl = dbSite.SiteUrl.Trim(' ');
 
@@ -74,7 +90,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             dbSite.SiteHtml = dbSite.SiteHtml.Trim(' ');
 
             _dbContext.DbSites.Add(dbSite);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
 
             // Add/update categories and site-categories relationships
             foreach (var category in site.Categories)
@@ -92,7 +108,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 else
                 {
                     _dbContext.DbCategories.Add(dbCategory);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
 
                 // Manage relation between site and category
@@ -103,7 +119,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundRelationship == null)
                 {
                     _dbContext.DbSiteCategories.Add(siteCatRel);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
             }
 
@@ -130,7 +146,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 else
                 {
                     _dbContext.DbFonts.Add(dbFont);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
 
                 // Manage relation between fonts and sites
@@ -142,7 +158,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundRelationship == null)
                 {
                     _dbContext.DbSiteFonts.Add(dbSiteFontRel);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
 
                 // Manage relation between fonts and categories
@@ -156,7 +172,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                     if (foundFontCatRel == null)
                     {
                         _dbContext.DbFontCategories.Add(fontCatRel);
-                        await _dbContext.SaveChangesAsync();
+                        _dbContext.SaveChanges();
                     }
                 }
 
@@ -204,7 +220,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             // Update name
             dbSite.SiteName = site.Name;
             _dbContext.DbSites.AddOrUpdate(dbSite);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
             
             // Recalculate text & html
             dbSite.SiteUrl = site.Url.Trim(' ');
@@ -223,7 +239,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 {
                     var dbFontCatRel = _dbContext.DbFontCategories.Where(fc => fc.FontId == oldFont.FontId && fc.CategoryId == oldCategory.CategoryId).ToList();
                     _dbContext.DbFontCategories.RemoveRange(dbFontCatRel);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
             }
 
@@ -232,7 +248,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             {
                 var dbSiteFontRel = _dbContext.DbSiteFonts.Where(sf => sf.SiteId == dbSite.Id && sf.FontId == oldFont.FontId).ToList();
                 _dbContext.DbSiteFonts.RemoveRange(dbSiteFontRel);
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
             }
 
             // Remove old site-category relationships
@@ -240,7 +256,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             {
                 var dbSiteCatRel = _dbContext.DbSiteCategories.Where(sc => sc.SiteId == dbSite.Id && sc.CategoryId == oldCategory.CategoryId).ToList();
                 _dbContext.DbSiteCategories.RemoveRange(dbSiteCatRel);
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
             }
 
             if (!string.IsNullOrEmpty(dbSite.SiteText))
@@ -267,7 +283,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundDbFont == null)
                 {
                     _dbContext.DbFonts.Add(dbFont);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
                 else
                 {
@@ -283,7 +299,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundDbSiteFontRel == null)
                 {
                     _dbContext.DbSiteFonts.Add(dbSiteFontRel);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
             }
 
@@ -301,7 +317,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundDbCategory == null)
                 {
                     _dbContext.DbCategories.Add(dbCategory);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
                 else
                 {
@@ -316,7 +332,7 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 if (foundDbSiteCatRel == null)
                 {
                     _dbContext.DbSiteCategories.Add(dbSiteCatRel);
-                    await _dbContext.SaveChangesAsync();
+                    _dbContext.SaveChanges();
                 }
 
             }
@@ -337,14 +353,14 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                     if (foundDbFontCatRel == null)
                     {
                         _dbContext.DbFontCategories.Add(dbFontCatRel);
-                        await _dbContext.SaveChangesAsync();
+                        _dbContext.SaveChanges();
                     }
 
                 }
             }
 
             _dbContext.DbSites.AddOrUpdate(dbSite);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
         public DbSite FindDbSiteByUrl(string siteUrl)

@@ -29,7 +29,9 @@ namespace Dissertation_Thesis_WebsiteScraper.Models
 
         public List<Tuple<string, int>> CategoryFrequency { get; set; }
 
-        public List<Tuple<string, string, int>> FontPerCategoryFrequency { get; set; }
+        public Dictionary<string, List<string>> CategoryFontsList { get; set; }
+
+        public Dictionary<string, List<string>> FontCategoryList { get; set; }
 
     }
 }

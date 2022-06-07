@@ -11,7 +11,7 @@ namespace Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels
             var features = trainDocs.SelectMany(x => x.ExtractFeatures()).ToList();
             Name = name;
             WordsCount = features.Count();
-            WordCount = features.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
+            WordWithFrequency = features.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
             NumberOfDocs = trainDocs.Count;
         }
 
@@ -19,14 +19,14 @@ namespace Dissertation_Thesis_WebsiteScraper.Models.ClassifierModels
 
         public int WordsCount { get; set; }
 
-        public Dictionary<string, int> WordCount { get; set; }
+        public Dictionary<string, int> WordWithFrequency { get; set; }
 
         public int NumberOfDocs { get; set; }
 
         public int NumberOfOccurrencesInTrainDocs(string word)
         {
-            if (WordCount.Keys.Contains(word)) 
-                return WordCount[word];
+            if (WordWithFrequency.Keys.Contains(word)) 
+                return WordWithFrequency[word];
             
             return 0;
         }

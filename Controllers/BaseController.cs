@@ -9,14 +9,5 @@ namespace Dissertation_Thesis_WebsiteScraper.Controllers
        
         protected WebAppContext WebApiContext => _dbContext ?? (_dbContext = new WebAppContext());
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _dbContext?.Dispose();
-            }
-
-            base.Dispose(disposing);
-        }
     }
 }

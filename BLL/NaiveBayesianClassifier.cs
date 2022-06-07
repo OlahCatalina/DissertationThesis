@@ -44,18 +44,88 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
             return _classes.Count;
         }
 
-        public int GetAccuracy(List<Tuple<string, string>> siteTextAndCategory)
+        public int GetAccuracy(List<Models.DatabaseModels.DbSite> sites, List<Models.DatabaseModels.DbCategory> categories, List<Tuple<string, string>> siteTextAndCategory)
         {
-            double sum = 0;
-            foreach (var tuple in siteTextAndCategory)
+            var pointsForAlgorithm = 0;
+            var totalPoints = 0;
+            var ce = new List<Tuple<double, bool>>();
+
+            foreach (var site in sites)
             {
-                var probability = IsInClassProbability(tuple.Item2, tuple.Item1);
-                sum += probability;
+                foreach (var category in categories)
+                {
+                    totalPoints += 1;
+
+                    var probability = IsInClassProbability(category.CategoryName, site.SiteText);
+                    var isSiteActuallyInCategory = siteTextAndCategory
+                        .FirstOrDefault(sc => sc.Item1 == site.SiteText && sc.Item2 == category.CategoryName) != null;
+                   
+                    ce.Add(new Tuple<double, bool>(probability, isSiteActuallyInCategory));
+
+                    //if (isSiteActuallyInCategory)
+                    //{
+                    //    // Site in category, so the probability should be high
+                    //    if (probability >= 0.1)
+                    //    {
+                    //        // It's a guess
+                    //        pointsForAlgorithm += 1;
+                    //    }
+                    //    else
+                    //    {
+                    //        // Not a guess
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // Site NOT in category, so the probability should be low
+                    //    if (probability <= 0.1)
+                    //    {
+                    //        // It's a guess
+                    //        pointsForAlgorithm += 1;
+                    //    }
+                    //    else
+                    //    {
+                    //        // Not a guess
+                    //    }
+                    //}
+                }
+
             }
 
-            var accuracy = sum * 100 / siteTextAndCategory.Count;
-            int acc = Convert.ToInt32(accuracy);
-            return acc;
+            var averageYes = ce.Where(s => s.Item2).Select(s => s.Item1).Average();
+            var averageNope = ce.Where(s => s.Item2 == false).Select(s => s.Item1).Average();
+
+            var threshold = (double)1/categories.Count; // ~0.66
+
+            foreach (var c in ce)
+            {
+                if (c.Item2)
+                {
+                    // If it was in category
+                    if (averageYes - threshold <= c.Item1 && averageYes + threshold >= c.Item1)
+                    {
+                        pointsForAlgorithm += 1;
+                    }
+                }
+                else
+                {
+                    // If it was NOT in category
+                    if (averageNope - threshold <= c.Item1 && averageNope + threshold >= c.Item1)
+                    {
+                        pointsForAlgorithm += 1;
+                    }
+                }
+            }
+           
+
+            if (totalPoints != 0)
+            {
+                var accuracy = ((double)pointsForAlgorithm / totalPoints) * 100;
+                var acc = Convert.ToInt32(accuracy);
+                return acc;
+            }
+
+            return 0;
         }
 
         public double IsInClassProbability(string className, string text)
@@ -102,7 +172,6 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
     {
         public static List<string> ExtractFeatures(this string text)
         {
-            var chars = new [] { ",", ".", "/", "!", "@", "#", "$", "%", "^", "&", "*", "'", "\"", ";", "_", "(", ")", ":", "|", "[", "]" };
             text = Regex.Replace(text, "[^a-zA-Z0-9_]+", " ");
 
             var listOfWords = Regex

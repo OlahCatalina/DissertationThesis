@@ -98,9 +98,14 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
                 totalText = Regex.Replace(totalText, @"\s+", " ");
                 totalText = totalText.ToLowerInvariant();
 
+                if (string.IsNullOrEmpty(totalText) || string.IsNullOrWhiteSpace(totalText))
+                {
+                    throw new Exception("Site text protected");
+                }
+
                 return totalText;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new Exception("Site scraper could not read the site text.");
             }
