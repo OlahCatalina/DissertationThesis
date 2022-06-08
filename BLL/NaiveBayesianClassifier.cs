@@ -46,86 +46,81 @@ namespace Dissertation_Thesis_WebsiteScraper.BLL
 
         public int GetAccuracy(List<Models.DatabaseModels.DbSite> sites, List<Models.DatabaseModels.DbCategory> categories, List<Tuple<string, string>> siteTextAndCategory)
         {
-            var pointsForAlgorithm = 0;
-            var totalPoints = 0;
-            var ce = new List<Tuple<double, bool>>();
+            var dictSiteCategories = new Dictionary<string, List<string>>();
+            var totalScore = (double)0;
 
-            foreach (var site in sites)
+            // Get a dictionary of (actual) sites and their categories list
+            foreach (var (siteText, category) in siteTextAndCategory)
             {
-                foreach (var category in categories)
+                // If already in dictionary, create a list or update value
+                if (dictSiteCategories.ContainsKey(siteText))
                 {
-                    totalPoints += 1;
-
-                    var probability = IsInClassProbability(category.CategoryName, site.SiteText);
-                    var isSiteActuallyInCategory = siteTextAndCategory
-                        .FirstOrDefault(sc => sc.Item1 == site.SiteText && sc.Item2 == category.CategoryName) != null;
-                   
-                    ce.Add(new Tuple<double, bool>(probability, isSiteActuallyInCategory));
-
-                    //if (isSiteActuallyInCategory)
-                    //{
-                    //    // Site in category, so the probability should be high
-                    //    if (probability >= 0.1)
-                    //    {
-                    //        // It's a guess
-                    //        pointsForAlgorithm += 1;
-                    //    }
-                    //    else
-                    //    {
-                    //        // Not a guess
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    // Site NOT in category, so the probability should be low
-                    //    if (probability <= 0.1)
-                    //    {
-                    //        // It's a guess
-                    //        pointsForAlgorithm += 1;
-                    //    }
-                    //    else
-                    //    {
-                    //        // Not a guess
-                    //    }
-                    //}
-                }
-
-            }
-
-            var averageYes = ce.Where(s => s.Item2).Select(s => s.Item1).Average();
-            var averageNope = ce.Where(s => s.Item2 == false).Select(s => s.Item1).Average();
-
-            var threshold = (double)1/categories.Count; // ~0.66
-
-            foreach (var c in ce)
-            {
-                if (c.Item2)
-                {
-                    // If it was in category
-                    if (averageYes - threshold <= c.Item1 && averageYes + threshold >= c.Item1)
+                    var cat = dictSiteCategories[siteText];
+                    
+                    if (cat == null || cat.Count == 0)
                     {
-                        pointsForAlgorithm += 1;
+                        cat = new List<string>();
                     }
+
+                    if (cat.Contains(category))
+                    {
+                        continue;
+                    }   
+                    
+                    cat.Add(category);
+                    dictSiteCategories[siteText] = cat;
                 }
+                // Add it to the dictionary
                 else
                 {
-                    // If it was NOT in category
-                    if (averageNope - threshold <= c.Item1 && averageNope + threshold >= c.Item1)
+                    dictSiteCategories.Add(siteText, new List<string> { category });
+                }
+
+                var ordList = dictSiteCategories[siteText].OrderBy(sc => sc).ToList();
+                dictSiteCategories[siteText] = ordList;
+            }
+
+            // Calculate the probability of the sites to be in a certain class, then take the classes with the highest probability
+            foreach (var site in sites)
+            {
+                var probabilities = new List<Tuple<string, double>>();
+
+                foreach (var category in categories)
+                {
+                    var probability = IsInClassProbability(category.CategoryName, site.SiteText);
+                    probabilities.Add(new Tuple<string, double>(category.CategoryName, probability));
+                }
+
+                var allowedNr = dictSiteCategories[site.SiteText].Count;
+                var collectedPoints = 0;
+
+                var predicted = probabilities.OrderByDescending(p => p.Item2)
+                    .Take(allowedNr)
+                    .OrderBy(p=>p.Item1)
+                    .Select(p => p.Item1)
+                    .ToList();
+
+                var actualData = dictSiteCategories[site.SiteText].ToArray();
+                var predictedData = predicted.ToArray();
+
+                for (var i= 0; i < allowedNr; i++)
+                {
+                    for (var j = 0; j < allowedNr; j++)
                     {
-                        pointsForAlgorithm += 1;
+                        if (actualData[i] == predictedData[j])
+                        {
+                            collectedPoints++;
+                        }
                     }
                 }
+
+                var score = (double)collectedPoints / allowedNr;
+                totalScore += score;
             }
+
+            var accuracy = (totalScore / sites.Count) * 100;
            
-
-            if (totalPoints != 0)
-            {
-                var accuracy = ((double)pointsForAlgorithm / totalPoints) * 100;
-                var acc = Convert.ToInt32(accuracy);
-                return acc;
-            }
-
-            return 0;
+            return (int)accuracy;
         }
 
         public double IsInClassProbability(string className, string text)
